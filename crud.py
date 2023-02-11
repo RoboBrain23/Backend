@@ -10,7 +10,7 @@ from fastapi import HTTPException, status, Depends
 
 # @param db: Session ==> this is the database session that we will use to store the data in the database
 # @param data: schemas.ChairData ==> this is the data that we will store in the database
-def store_chair_data(db: Session, data: schemas.ChairData):
+def store_chair_data(db: Session, data: schemas.ReadChairData):
     # * Create a new instance of ChairData model to store the data in the database
     new_data = models.ChairData(
         body_temperature=data.body_temperature,
@@ -87,15 +87,19 @@ def signup(db: Session, patient: schemas.SignUp):
         )
 
     # * Create a new instance of Patient model to store the patient in the database
+
+    integer_id = int(patient.id)
+    integer_age = int(patient.age)
+
     new_patient = models.Patient(
-        id=patient.id,
+        id=integer_id,
         patient_full_name=patient.patient_full_name,
         username=patient.username,
         email=patient.email,
         phone_number=patient.phone_number,
         password=patient.password,
         address=patient.address,
-        age=patient.age,
+        age=integer_age,
     )
 
     # * Add the new patient to the database session and commit the changes to the database
@@ -106,11 +110,28 @@ def signup(db: Session, patient: schemas.SignUp):
     return new_patient
 
 
+active_user = 0
+
 # TODO: Complete patient_info CRUD function
 def patient_info():
     pass
 
 
 # TODO: Complete login CRUD function
-def login():
-    pass
+def login(db: Session, patient: schemas.Login):
+    db_emial = (
+        db.query(models.Patient).filter(models.Patient.email == patient.email).first()
+    )
+    db_password = (
+        db.query(models.Patient)
+        .filter(models.Patient.password == patient.password)
+        .first()
+    )
+
+    if (db_emial is not None) and (db_password is not None):
+        active_user = db_emial.id
+        return "Success"
+
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Invalid email or password"
+    )

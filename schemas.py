@@ -45,12 +45,11 @@ class SignUp(Login):
 
 
 # * this ChairData schema used when creating a route for the data coming from the rasberry pi
-class ChairData(BaseModel):
+class GetChairData(BaseModel):
     body_temperature: float
     oximeter: float
     heart_rate: float
     sugar_level: float
-    patient_id: int
 
     class Config:
         orm_mode = True
@@ -60,6 +59,19 @@ class ChairData(BaseModel):
                 "oximeter": 125.4,
                 "heart_rate": 122.5,
                 "sugar_level": 70.45,
+            }
+        }
+
+class ReadChairData(GetChairData):
+    patient_id: int
+
+    class Config:
+        schema_extra = {
+            "example": {
                 "patient_id": 1,
+                "body_temperature": 36.5,
+                "oximeter": 125.4,
+                "heart_rate": 122.5,
+                "sugar_level": 70.45,
             }
         }

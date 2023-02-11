@@ -22,5 +22,9 @@ async def signup(patient: schemas.SignUp, db: Session = Depends(database.get_db)
 # ? Create a route that will login the patient
 # * POST  ==>  "/login"
 
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(patient: schemas.Login, db: Session = Depends(database.get_db)):
+    return crud.login(patient=patient, db=db)
+
 # ? Create a route that will return the patient data when authontication is successful
 # * GET  ==>  "/me"

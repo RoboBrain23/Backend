@@ -12,13 +12,7 @@ from fastapi import HTTPException, status, Depends
 # @param data: schemas.ChairData ==> this is the data that we will store in the database
 def store_chair_data(db: Session, data: schemas.ReadChairData):
     # * Create a new instance of ChairData model to store the data in the database
-    new_data = models.ChairData(
-        body_temperature=data.body_temperature,
-        oximeter=data.oximeter,
-        heart_rate=data.heart_rate,
-        sugar_level=data.sugar_level,
-        patient_id=data.patient_id,
-    )
+    new_data = models.ChairData(**data.dict())
     # * Get the patient from the database using the patient_id that we got from the request body
     # * this patient will be used to create the relationship between the patient and the chair data
     patient = (
@@ -88,19 +82,10 @@ def signup(db: Session, patient: schemas.SignUp):
 
     # * Create a new instance of Patient model to store the patient in the database
 
-    integer_id = int(patient.id)
-    integer_age = int(patient.age)
+    patient.id = int(patient.id)
+    patient.age = int(patient.age)
 
-    new_patient = models.Patient(
-        id=integer_id,
-        patient_full_name=patient.patient_full_name,
-        username=patient.username,
-        email=patient.email,
-        phone_number=patient.phone_number,
-        password=patient.password,
-        address=patient.address,
-        age=integer_age,
-    )
+    new_patient = models.Patient(**patient.dict())
 
     # * Add the new patient to the database session and commit the changes to the database
     db.add(new_patient)

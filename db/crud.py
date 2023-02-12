@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-import schemas, models
+import db.schemas as schemas, db.models as models
 from fastapi import HTTPException, status, Depends
 
 # * here we create our CRUD functions that will be used in our routers

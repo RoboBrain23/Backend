@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-import database, schemas, crud, models
+import db.database as database, db.schemas as schemas, db.crud as crud, db.models as models
 from sqlalchemy.orm import Session
 
 # * Here are the routes that related to the data coming from the chair

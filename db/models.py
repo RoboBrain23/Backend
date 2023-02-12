@@ -1,6 +1,6 @@
 from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
-from database import Base
+from db.database import Base
 
 
 class Patient(Base):

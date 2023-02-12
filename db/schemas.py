@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 # * Here we put our schemas to be used in the routes and the database models
-#* schemas work as blueprints for the database models and the routes request and response bodies
+# * schemas work as blueprints for the database models and the routes request and response bodies
 
 
 # * this login schema used when create login route to specify the request body
@@ -61,6 +61,7 @@ class GetChairData(BaseModel):
                 "sugar_level": 70.45,
             }
         }
+
 
 class ReadChairData(GetChairData):
     patient_id: int

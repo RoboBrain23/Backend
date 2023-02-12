@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-import database, schemas, crud, models
+import db.database as database, db.schemas as schemas, db.crud as crud, db.models as models
 from sqlalchemy.orm import Session
 
 # * Here are the routes that related to the data coming from the chair
@@ -9,12 +9,13 @@ router = APIRouter(
     prefix="/chair",
 )
 
-# * Create all the tables in the database if they don't exist already
-models.Base.metadata.create_all(bind=database.engine)
-
 
 # * Create a route that will return the last chair data for a specific patient
-@router.get("/data/{patient_id}", response_model=schemas.GetChairData, status_code=status.HTTP_200_OK)
+@router.get(
+    "/data/{patient_id}",
+    response_model=schemas.GetChairData,
+    status_code=status.HTTP_200_OK,
+)
 async def get_chair_data(patient_id: int, db: Session = Depends(database.get_db)):
     return crud.get_chair_data(patient_id=patient_id, db=db)
 

@@ -131,16 +131,11 @@ def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
 
     # * Create a new instance of Patient model to store the patient in the database
 
-    new_patient = models.Patient(
-        id=int(patient.id),
-        password=create_hashed_password(patient.password),
-        email=patient.email,
-        patient_full_name=patient.patient_full_name,
-        username=patient.username,
-        phone_number=patient.phone_number,
-        address=patient.address,
-        age=int(patient.age),
-    )
+    patient.id = int(patient.id)
+    patient.age = int(patient.age)
+    patient.password = create_hashed_password(patient.password)
+    
+    new_patient = models.Patient(**patient.dict())
 
     # * Add the new patient to the database session and commit the changes to the database
     db.add(new_patient)
@@ -174,3 +169,4 @@ def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
         )
     return user
+

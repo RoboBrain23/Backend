@@ -13,12 +13,11 @@ router = APIRouter(
 
 # * Create a route that will return the last chair data for a specific patient
 @router.get(
-    "/data/{patient_id}",
+    "/data",
     response_model=schemas.GetChairData,
     status_code=status.HTTP_200_OK,
 )
 async def get_chair_data(
-    patient_id: int,
     authorize: AuthJWT = Depends(),
     db: Session = Depends(database.get_db),
 ):
@@ -28,7 +27,8 @@ async def get_chair_data(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )
-    return crud.get_chair_data(patient_id=patient_id, db=db)
+    current_user = authorize.get_jwt_subject()
+    return crud.get_chair_data(patient_id=current_user, db=db)
 
 
 # * Create a route that will store the data in the database when POST request is sent to the route

@@ -1,9 +1,13 @@
 from sqlalchemy.orm import Session
 import db.schemas as schemas, db.models as models
 from fastapi import HTTPException, status, Depends
+from fastapi_jwt_auth import AuthJWT
+from fastapi.encoders import jsonable_encoder
+from passlib.context import CryptContext
 
 # * here we create our CRUD functions that will be used in our routers
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # * Create a function that will store the data in the database when POST request is sent to the route
 
@@ -51,6 +55,20 @@ def get_chair_data(patient_id: int, db: Session):
 
 
 # * Create a function that will store the patient in the database when POST request is sent to the route
+
+
+def generate_tokens(id: str, authorize: AuthJWT):
+    pass
+
+
+def create_hashed_password(password: str):
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
 # @param db: Session ==> this is the database session that we will use to store the data in the database
 # @param patient: schemas.Patient ==> this is the patient that we will store in the database
 def signup(db: Session, patient: schemas.SignUp):
@@ -80,10 +98,33 @@ def signup(db: Session, patient: schemas.SignUp):
             detail="This username is already exist",
         )
 
+    db_id = db.query(models.Patient).filter(models.Patient.id == patient.id).first()
+
+    # * if the username is already exist raise an HTTPException with status code 400 and a message
+    if db_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This id is already exist",
+        )
+
+    db_phone_number = (
+        db.query(models.Patient)
+        .filter(models.Patient.phone_number == patient.phone_number)
+        .first()
+    )
+
+    # * if the username is already exist raise an HTTPException with status code 400 and a message
+    if db_phone_number is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This Phone Number is already exist",
+        )
+
     # * Create a new instance of Patient model to store the patient in the database
 
     patient.id = int(patient.id)
     patient.age = int(patient.age)
+    patient.password = create_hashed_password(patient.password)
 
     new_patient = models.Patient(**patient.dict())
 
@@ -104,20 +145,14 @@ def patient_info():
 
 
 # TODO: Complete login CRUD function
-def login(db: Session, patient: schemas.Login):
-    db_emial = (
-        db.query(models.Patient).filter(models.Patient.email == patient.email).first()
-    )
-    db_password = (
-        db.query(models.Patient)
-        .filter(models.Patient.password == patient.password)
-        .first()
-    )
 
-    if (db_emial is not None) and (db_password is not None):
-        active_user = db_emial.id
-        return "Success"
 
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail="Invalid email or password"
-    )
+def get_user(db: Session, user: schemas.Login):
+    user = db.query(models.Patient).filter(user.email == models.Patient.email).first()
+    if user is None or not verify_password(user.password, models.Patient.password):
+        return None
+    return user
+
+
+def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
+    pass

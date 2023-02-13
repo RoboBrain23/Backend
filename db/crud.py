@@ -64,6 +64,7 @@ def generate_tokens(id: int, authorize: AuthJWT):
     response = {
         "access_token": access_token,
         "refresh_token": refresh_token,
+        "token_type": "bearer",
         "message": "Success",
     }
     return jsonable_encoder(response)
@@ -79,7 +80,7 @@ def verify_password(plain_password, hashed_password):
 
 # @param db: Session ==> this is the database session that we will use to store the data in the database
 # @param patient: schemas.Patient ==> this is the patient that we will store in the database
-def signup(db: Session, patient: schemas.SignUp):
+def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
     # * Check if the email is already exist in the database
     db_email = (
         db.query(models.Patient).filter(models.Patient.email == patient.email).first()
@@ -130,21 +131,23 @@ def signup(db: Session, patient: schemas.SignUp):
 
     # * Create a new instance of Patient model to store the patient in the database
 
-    patient.id = int(patient.id)
-    patient.age = int(patient.age)
-    patient.password = create_hashed_password(patient.password)
-
-    new_patient = models.Patient(**patient.dict())
+    new_patient = models.Patient(
+        id=int(patient.id),
+        password=create_hashed_password(patient.password),
+        email=patient.email,
+        patient_full_name=patient.patient_full_name,
+        username=patient.username,
+        phone_number=patient.phone_number,
+        address=patient.address,
+        age=int(patient.age),
+    )
 
     # * Add the new patient to the database session and commit the changes to the database
     db.add(new_patient)
     db.commit()
     db.refresh(new_patient)
 
-    return new_patient
-
-
-active_user = 0
+    return generate_tokens(authorize=authorize, id=new_patient.id)
 
 
 # TODO: Complete patient_info CRUD function

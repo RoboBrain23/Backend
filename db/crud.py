@@ -57,8 +57,16 @@ def get_chair_data(patient_id: int, db: Session):
 # * Create a function that will store the patient in the database when POST request is sent to the route
 
 
-def generate_tokens(id: str, authorize: AuthJWT):
-    pass
+def generate_tokens(id: int, authorize: AuthJWT):
+    access_token = authorize.create_access_token(subject=id)
+    refresh_token = authorize.create_refresh_token(subject=id)
+
+    response = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "message": "Success",
+    }
+    return jsonable_encoder(response)
 
 
 def create_hashed_password(password: str):
@@ -147,12 +155,19 @@ def patient_info():
 # TODO: Complete login CRUD function
 
 
-def get_user(db: Session, user: schemas.Login):
-    user = db.query(models.Patient).filter(user.email == models.Patient.email).first()
-    if user is None or not verify_password(user.password, models.Patient.password):
-        return None
-    return user
+def get_user(db: Session, authorize: AuthJWT, patient: schemas.Login):
+    user = (
+        db.query(models.Patient).filter(patient.email == models.Patient.email).first()
+    )
+    if user and verify_password(patient.password, user.password):
+        return generate_tokens(authorize=authorize, id=user.id)
+    return None
 
 
 def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
-    pass
+    user = get_user(db=db, authorize=authorize, patient=patient)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
+        )
+    return user

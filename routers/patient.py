@@ -24,22 +24,7 @@ async def signup(patient: schemas.SignUp, authorize: AuthJWT = Depends(), db: Se
 
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def login(patient: schemas.Login, authorize: AuthJWT = Depends(), db: Session = Depends(database.get_db)):
-    user = db.query(models.Patient).filter(patient.email == models.Patient.email).first()
-    if user and crud.verify_password(patient.password, user.password):
-        access_token = authorize.create_access_token(subject=user.id)
-        refresh_token = authorize.create_refresh_token(subject=user.id)
-
-        response = {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "message": "Success",
-        }
-        return jsonable_encoder(response)
-    
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Invalid email or password"
-    )
+    return crud.login(db=db, authorize=authorize, patient=patient)
 
 
 # ? Create a route that will return the patient data when authontication is successful

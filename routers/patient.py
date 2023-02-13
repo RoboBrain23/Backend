@@ -1,16 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import db.schemas as schemas, db.database as database, db.crud as crud, db.models as models
+from fastapi_jwt_auth import AuthJWT
+from fastapi.encoders import jsonable_encoder
+from auth.schema import Token
+
 
 router = APIRouter(tags=["patient"], prefix="/patient")
 
 
 # * Create a route that will register a new patient in the database when POST request is sent to the route
-@router.post(
-    "/signup", response_model=schemas.SignUp, status_code=status.HTTP_201_CREATED
-)
-async def signup(patient: schemas.SignUp, db: Session = Depends(database.get_db)):
-    return crud.signup(patient=patient, db=db)
+@router.post("/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
+async def signup(
+    patient: schemas.SignUp,
+    authorize: AuthJWT = Depends(),
+    db: Session = Depends(database.get_db),
+):
+    return crud.signup(patient=patient, db=db, authorize=authorize)
 
 
 # TODO: Create 2 Routes
@@ -19,10 +25,25 @@ async def signup(patient: schemas.SignUp, db: Session = Depends(database.get_db)
 # * POST  ==>  "/login"
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
-async def login(patient: schemas.Login, db: Session = Depends(database.get_db)):
-    return crud.login(patient=patient, db=db)
+@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
+async def login(
+    patient: schemas.Login,
+    authorize: AuthJWT = Depends(),
+    db: Session = Depends(database.get_db),
+):
+    return crud.login(db=db, authorize=authorize, patient=patient)
 
 
 # ? Create a route that will return the patient data when authontication is successful
 # * GET  ==>  "/me"
+
+@router.get("/me", response_model=schemas.Info, status_code=200)
+async def get_info(authorize: AuthJWT = Depends(), db: Session = Depends(database.get_db)):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
+    current_user = authorize.get_jwt_subject()
+    return crud.user_info(db=db, user_id=current_user)

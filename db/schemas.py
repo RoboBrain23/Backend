@@ -76,3 +76,26 @@ class ReadChairData(GetChairData):
                 "sugar_level": 70.45,
             }
         }
+
+
+class Info(Login):
+    id: int
+    patient_full_name: str
+    email: str
+    username: str
+    phone_number: str
+    address: str
+    age: int
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "patient_full_name": "Mohamed Ali",
+                "username": "moAli123",
+                "email": "example@mail.com",
+                "phone_number": "0111122234",
+                "address": "Zagazig, Egypt",
+                "age": 25,
+            }
+        }

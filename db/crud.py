@@ -170,3 +170,6 @@ def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
         )
     return user
 
+def user_info(db: Session, user_id: int):
+    user = db.query(models.Patient).filter(models.Patient.id == user_id).first()
+    return user

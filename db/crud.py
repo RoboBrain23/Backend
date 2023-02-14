@@ -30,7 +30,7 @@ def store_chair_data(db: Session, data: schemas.ReadChairData):
     db.commit()
     db.refresh(new_data)
 
-    return new_data
+    return {"message": "Data has been stored successfully"}
 
 
 # * Create a fucntion that will return the last chair data for a specific patient

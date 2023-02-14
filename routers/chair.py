@@ -33,7 +33,7 @@ async def get_chair_data(
 
 # * Create a route that will store the data in the database when POST request is sent to the route
 @router.post(
-    "/data", response_model=schemas.ReadChairData, status_code=status.HTTP_202_ACCEPTED
+    "/data", status_code=status.HTTP_202_ACCEPTED
 )
 async def read_new_chair_data(
     data: schemas.ReadChairData,

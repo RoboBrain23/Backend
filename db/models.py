@@ -1,6 +1,8 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text, Boolean
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from db.database import Base
+
+
 
 
 class Patient(Base):
@@ -14,6 +16,7 @@ class Patient(Base):
     password = Column(Text)
     address = Column(String)
     age = Column(Integer)
+    gender = Column(String)
 
     chair_data = relationship("ChairData", back_populates="patient")
 

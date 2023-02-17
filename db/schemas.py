@@ -27,6 +27,7 @@ class SignUp(Login):
     username: str
     phone_number: str
     address: str
+    gender: str
     age: int
 
     class Config:
@@ -39,6 +40,7 @@ class SignUp(Login):
                 "email": "example@mail.com",
                 "phone_number": "0111122234",
                 "address": "Zagazig, Egypt",
+                "gender" : "male",
                 "age": 25,
             }
         }

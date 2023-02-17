@@ -9,14 +9,13 @@ async def send_request():
     async with httpx.AsyncClient() as client:
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
         }
         payload = {
             "body_temperature": "36.5",
             "oximeter": "125.4",
             "heart_rate": "122.5",
             "sugar_level": "70.45",
-            "patient_id": "1",
+            "patient_id": 123,
         }
         response = await client.post(
             "http://127.0.0.1:8000/chair/data", json=payload, headers=headers

@@ -37,8 +37,11 @@ async def login(
 # ? Create a route that will return the patient data when authontication is successful
 # * GET  ==>  "/me"
 
-@router.get("/me", response_model=schemas.Info, status_code=200)
-async def get_info(authorize: AuthJWT = Depends(), db: Session = Depends(database.get_db)):
+
+@router.get("/me",response_model=schemas.Info, status_code=200)
+async def get_info(
+    authorize: AuthJWT = Depends(), db: Session = Depends(database.get_db)
+):
     try:
         authorize.jwt_required()
     except Exception as e:
@@ -46,4 +49,4 @@ async def get_info(authorize: AuthJWT = Depends(), db: Session = Depends(databas
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
         )
     current_user = authorize.get_jwt_subject()
-    return crud.user_info(db=db, user_id=current_user)
+    return crud.user_info(user_id=current_user, db=db)

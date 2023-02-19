@@ -172,4 +172,4 @@ def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
 
 def user_info(db: Session, user_id: int):
     user = db.query(models.Patient).filter(models.Patient.id == user_id).first()
-    return user
+    return schemas.Info.from_orm(user)

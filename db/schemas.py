@@ -80,7 +80,7 @@ class ReadChairData(GetChairData):
         }
 
 
-class Info(Login):
+class Info(BaseModel):
     id: int
     patient_full_name: str
     email: str
@@ -91,6 +91,7 @@ class Info(Login):
     age: int
 
     class Config:
+        orm_mode = True
         schema_extra = {
             "example": {
                 "id": 1,

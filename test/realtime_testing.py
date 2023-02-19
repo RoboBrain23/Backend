@@ -13,9 +13,9 @@ async def send_request():
         payload = {
             "body_temperature": "36.5",
             "oximeter": "125.4",
-            "heart_rate": "122.5",
+            "heart_rate": "90.5",
             "sugar_level": "70.45",
-            "patient_id": 123,
+            "patient_id": 6,
         }
         response = await client.post(
             "http://127.0.0.1:8000/chair/data", json=payload, headers=headers

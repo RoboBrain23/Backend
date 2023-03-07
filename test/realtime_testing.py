@@ -1,7 +1,7 @@
 import asyncio
 import httpx
 
-token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjEsImlhdCI6MTY3NjM0OTEwNSwibmJmIjoxNjc2MzQ5MTA1LCJqdGkiOiJiMDI5Mjk5ZC0xNGNmLTRiNWYtYmIwMy1kNzUwYWE5YTNjOWUiLCJleHAiOjE2NzYzNTA5MDUsInR5cGUiOiJhY2Nlc3MiLCJmcmVzaCI6ZmFsc2V9.QKklYPPZeMkqvOWtsPSwFyvSGJ-14P8sGMDwU79_RuQ"
+token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjc3LCJpYXQiOjE2NzcxMjcyMDQsIm5iZiI6MTY3NzEyNzIwNCwianRpIjoiMzc2ZjBiNWItOGE5YS00Yjg5LWI0OWUtOTZjNTFhZTM5YTU4IiwiZXhwIjoxNjc3MTI5MDA0LCJ0eXBlIjoiYWNjZXNzIiwiZnJlc2giOmZhbHNlfQ.EgyT9mCZXzgX8e8qT-AmXs_cQ1A55hloi2hREPCsyV8"
 
 
 
@@ -15,7 +15,7 @@ async def send_request():
             "oximeter": "125.4",
             "heart_rate": "90.5",
             "sugar_level": "70.45",
-            "patient_id": 6,
+            "patient_id": 77,
         }
         response = await client.post(
             "http://127.0.0.1:8000/chair/data", json=payload, headers=headers

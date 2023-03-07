@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 # * Here we put our schemas to be used in the routes and the database models
-#* schemas work as blueprints for the database models and the routes request and response bodies
+# * schemas work as blueprints for the database models and the routes request and response bodies
 
 
 # * this login schema used when create login route to specify the request body
@@ -27,6 +27,7 @@ class SignUp(Login):
     username: str
     phone_number: str
     address: str
+    gender: str
     age: int
 
     class Config:
@@ -39,18 +40,18 @@ class SignUp(Login):
                 "email": "example@mail.com",
                 "phone_number": "0111122234",
                 "address": "Zagazig, Egypt",
+                "gender" : "male",
                 "age": 25,
             }
         }
 
 
 # * this ChairData schema used when creating a route for the data coming from the rasberry pi
-class ChairData(BaseModel):
+class GetChairData(BaseModel):
     body_temperature: float
     oximeter: float
     heart_rate: float
     sugar_level: float
-    patient_id: int
 
     class Config:
         orm_mode = True
@@ -60,6 +61,46 @@ class ChairData(BaseModel):
                 "oximeter": 125.4,
                 "heart_rate": 122.5,
                 "sugar_level": 70.45,
+            }
+        }
+
+
+class ReadChairData(GetChairData):
+    patient_id: int
+
+    class Config:
+        schema_extra = {
+            "example": {
                 "patient_id": 1,
+                "body_temperature": 36.5,
+                "oximeter": 125.4,
+                "heart_rate": 122.5,
+                "sugar_level": 70.45,
+            }
+        }
+
+
+class Info(BaseModel):
+    id: int
+    patient_full_name: str
+    email: str
+    username: str
+    phone_number: str
+    address: str
+    gender: str
+    age: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "patient_full_name": "Mohamed Ali",
+                "username": "moAli123",
+                "email": "example@mail.com",
+                "phone_number": "0111122234",
+                "address": "Zagazig, Egypt",
+                "gender": "male",
+                "age": 25,
             }
         }

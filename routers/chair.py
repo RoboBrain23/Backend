@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 import db.database as database, db.schemas as schemas, db.crud as crud, db.models as models
 from sqlalchemy.orm import Session
+from fastapi_jwt_auth import AuthJWT
 
 # * Here are the routes that related to the data coming from the chair
 
@@ -9,21 +10,30 @@ router = APIRouter(
     prefix="/chair",
 )
 
-# * Create all the tables in the database if they don't exist already
-models.Base.metadata.create_all(bind=database.engine)
-
 
 # * Create a route that will return the last chair data for a specific patient
-@router.get("/data/{patient_id}", status_code=status.HTTP_200_OK)
-async def get_chair_data(patient_id: int, db: Session = Depends(database.get_db)):
-    return crud.get_chair_data(patient_id=patient_id, db=db)
+@router.get(
+    "/data",
+    response_model=schemas.GetChairData,
+    status_code=status.HTTP_200_OK,
+)
+async def get_chair_data(
+    authorize: AuthJWT = Depends(),
+    db: Session = Depends(database.get_db),
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
+    current_user = authorize.get_jwt_subject()
+    return crud.get_chair_data(patient_id=current_user, db=db)
 
 
 # * Create a route that will store the data in the database when POST request is sent to the route
-@router.post(
-    "/data", response_model=schemas.ChairData, status_code=status.HTTP_202_ACCEPTED
-)
+@router.post("/data", status_code=status.HTTP_200_OK)
 async def read_new_chair_data(
-    data: schemas.ChairData, db: Session = Depends(database.get_db)
+    data: schemas.ReadChairData, db: Session = Depends(database.get_db)
 ):
     return crud.store_chair_data(data=data, db=db)

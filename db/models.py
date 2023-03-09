@@ -27,7 +27,7 @@ class SensorData(Base):
 
     # ? relationship with chair
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
-    chair = relationship("Chair", back_populates="sensor_date")
+    chair = relationship("Chair", back_populates="sensor_data")
 
 
 class Patient(Base):
@@ -41,7 +41,7 @@ class Patient(Base):
 
     # ? one to one relationship with chair
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
-    chair = relationship("Chair", uselist=False, back_populates="patient")
+    chair = relationship("Chair", uselist=False, backref="patient")
 
 
 # TODO: Create Caregiver table with many to many relationship with patient table

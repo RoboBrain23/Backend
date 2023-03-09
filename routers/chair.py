@@ -49,9 +49,14 @@ async def chair_registration(
     return crud.chair_signup(chair=chair, db=db)
 
 
+# TODO: Debug this route
+
+
 # * Caregiver login to the chair to access sensor's data
 @router.post("/login", status_code=status.HTTP_200_OK)
 async def chair_login(
-    chair: schemas.ChairRegistration, db: Session = Depends(database.get_db)
+    chair: schemas.ChairRegistration,
+    authorize: AuthJWT = Depends(),
+    db: Session = Depends(database.get_db),
 ):
-    return crud.chair_login(chair=chair, db=db)
+    return crud.chair_login(chair=chair, db=db, authorize=authorize)

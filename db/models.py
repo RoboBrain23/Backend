@@ -18,8 +18,8 @@ class SensorData(Base):
     __tablename__ = "sensor_data"
 
     id = Column(Integer, primary_key=True)
-    temperature = Column(Float)
-    pulse_rate = Column(Float)
+    body_temperature = Column(Float)
+    heart_rate = Column(Float)
     oximeter = Column(Float)
     sugar_level = Column(Float)
     created_date = Column(Date, default=func.current_date())

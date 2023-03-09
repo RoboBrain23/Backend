@@ -16,7 +16,7 @@ class ChairRegistration(BaseModel):
 
 
 # ? this ChairData schema used when creating a route for the data coming from the rasberry pi
-class GetChairData(BaseModel):
+class ReadChairData(BaseModel):
     body_temperature: float
     oximeter: float
     heart_rate: float

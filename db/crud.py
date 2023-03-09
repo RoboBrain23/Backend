@@ -57,8 +57,7 @@ def chair_login(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistratio
     current_chair = get_chair(db=db, authorize=authorize, chair=chair)
     if current_chair is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chair ID or Password Invalid"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
         )
     return current_chair
 
@@ -66,17 +65,12 @@ def chair_login(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistratio
 # @param db: Session ==> this is the database session that we will use to store the data in the database
 # @param data: schemas.ChairData ==> this is the data that we will store in the database
 def store_chair_data(db: Session, data: schemas.ReadChairData):
-    # * Create a new instance of ChairData model to store the data in the database
-    new_data = models.ChairData(**data.dict())
-    # * Get the patient from the database using the patient_id that we got from the request body
-    # * this patient will be used to create the relationship between the patient and the chair data
-    patient = (
-        db.query(models.Patient).filter(data.patient_id == models.Patient.id).first()
-    )
-    # * Create the relationship between the patient and the chair data
-    new_data.patient = patient
+    new_data = models.SensorData(**data.dict())
 
-    # * Add the new data to the database session and commit the changes to the database
+    chair = db.query(models.Chair).filter(data.chair_id == models.Chair.id).first()
+
+    new_data.chair = chair
+
     db.add(new_data)
     db.commit()
     db.refresh(new_data)

@@ -26,7 +26,7 @@ class SensorData(Base):
     created_time = Column(Time, server_default=func.current_time())
 
     # ? relationship with chair
-    chair_id = Column(Integer, ForeignKey("chair.id"))
+    chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
     chair = relationship("Chair", back_populates="sensor_date")
 
 
@@ -40,5 +40,8 @@ class Patient(Base):
     age = Column(String)
 
     # ? one to one relationship with chair
-    chair_id = Column(Integer, ForeignKey("chair.id"))
+    chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
     chair = relationship("Chair", uselist=False, back_populates="patient")
+
+
+# TODO: Create Caregiver table with many to many relationship with patient table

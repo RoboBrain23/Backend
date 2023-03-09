@@ -9,7 +9,58 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 # * Create a function that will store the data in the database when POST request is sent to the route
+def create_hashed_password(password: str):
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+def chair_signup(db: Session, chair: schemas.ChairRegistration):
+    new_chair = models.Chair(
+        id=chair.chair_id, password=create_hashed_password(chair.password)
+    )
+
+    db.add(new_chair)
+    db.commit()
+    db.refresh(new_chair)
+
+    return {"message": "Chair register successfully"}
+
+
+def generate_tokens_chair(id: int, authorize: AuthJWT):
+    access_token = authorize.create_access_token(subject=id)
+    refresh_token = authorize.create_refresh_token(subject=id)
+
+    response = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "message": "Success",
+    }
+    return jsonable_encoder(response)
+
+
+def get_chair(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistration):
+    current_chair = (
+        db.query(models.Chair).filter(chair.chair_id == models.Chair.id).first
+    )
+    if current_chair and verify_password(chair.password, models.Chair.password):
+        return generate_tokens_chair(id=current_chair.id, authorize=authorize)
+    return None
+
+
+def chair_login(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistration):
+    current_chair = get_chair(db=db, authorize=authorize, chair=chair)
+    if current_chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Chair ID or Password Invalid"
+        )
+    return current_chair
 
 
 # @param db: Session ==> this is the database session that we will use to store the data in the database
@@ -70,14 +121,6 @@ def generate_tokens(id: int, authorize: AuthJWT):
     return jsonable_encoder(response)
 
 
-def create_hashed_password(password: str):
-    return pwd_context.hash(password)
-
-
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
-
-
 # @param db: Session ==> this is the database session that we will use to store the data in the database
 # @param patient: schemas.Patient ==> this is the patient that we will store in the database
 def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
@@ -134,7 +177,7 @@ def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
     patient.id = int(patient.id)
     patient.age = int(patient.age)
     patient.password = create_hashed_password(patient.password)
-    
+
     new_patient = models.Patient(**patient.dict())
 
     # * Add the new patient to the database session and commit the changes to the database
@@ -169,6 +212,7 @@ def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
         )
     return user
+
 
 def user_info(db: Session, user_id: int):
     user = db.query(models.Patient).filter(models.Patient.id == user_id).first()

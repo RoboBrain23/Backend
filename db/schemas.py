@@ -15,16 +15,29 @@ class ChairRegistration(BaseModel):
         schema_extra = {"example": {"chair_id": 55, "password": "mypassword"}}
 
 
-# ? this ChairData schema used when creating a route for the data coming from the rasberry pi
-class ReadChairData(BaseModel):
+# ? this GetChairData schema used when creating a route for sending data from database
+class GetChairData(BaseModel):
     body_temperature: float
     oximeter: float
     heart_rate: float
     sugar_level: float
-    chair_id: int
 
     class Config:
         orm_mode = True
+        schema_extra = {
+            "example": {
+                "body_temperature": 36.5,
+                "oximeter": 125.4,
+                "heart_rate": 122.5,
+                "sugar_level": 70.45,
+            }
+        }
+
+# ? this ReadChairData schema use when creating a route for the upcoming sensors' data
+class ReadChairData(GetChairData):
+    chair_id: int
+
+    class Config:
         schema_extra = {
             "example": {
                 "body_temperature": 36.5,

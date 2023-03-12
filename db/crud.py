@@ -101,7 +101,7 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
     return {"message": "Chair register successfully"}
 
 
-def get_chair(db: Session, chair: schemas.ChairRegistration):
+def get_chair(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistration):
     """
     This function validate the data that have been sent to login to specific chair
     First we check if the chair_id is exist in the database then verify and compare
@@ -112,6 +112,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     Args:
         db (Session): The database session that we will use to validate the data
         chair (schemas.ChairRegistration): The data that we want to validate with stored data (chair_id, password)
+        authorize (AuthJWT): The AuthJWT object that we will use to generate the token
 
     Returns:
         Dict : We return a message tell us the login done successfully
@@ -123,17 +124,18 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     )
 
     if current_chair and verify_password(chair.password, current_chair.password):
-        return {"message": "Chair login successfully"}
+        return generate_tokens(id=current_chair.id, authorize=authorize)
     return None
 
 
-def chair_login(db: Session, chair: schemas.ChairRegistration):
+def chair_login(db: Session, authorize: AuthJWT, chair: schemas.ChairRegistration):
     """
     We use this function to login or access the chair with a specific id
 
     Args:
         db (Session): The database session that we will use to validate the data
         chair (schemas.ChairRegistration): The data that we want to validate with stored data (chair_id, password)
+        authorize (AuthJWT): The AuthJWT object that we will use to generate the token
 
     Raises:
         HTTPException: If the chair_id not exist in the database we raise an exception with status code 404
@@ -142,7 +144,7 @@ def chair_login(db: Session, chair: schemas.ChairRegistration):
         Dict : We return a message tell us the login done successfully
     """
 
-    current_chair = get_chair(db=db, chair=chair)
+    current_chair = get_chair(db=db, chair=chair, authorize=authorize)
     if current_chair is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
@@ -214,6 +216,39 @@ def get_chair_data(chair_id: int, db: Session):
         )
 
     return schemas.GetChairData.from_orm(sensor_data)
+
+
+def register_patient(db: Session, patient: schemas.PatientData, chair_id: int):
+    """
+    We use this function to store the patient's data in the database
+    with the chair_id they use
+
+    Args:
+        db (Session): The database session that we will use to validate the data
+        patient (schemas.PatientData): The patient's data that we want to store in the database
+        chair_id (int): The chair_id of the chair that the patient use and stored in the token
+
+    Returns:
+        Dict: we return a Dict message tell us we stored patient's data successfully
+    """
+
+    new_patient = models.Patient(
+        first_name=patient.first_name,
+        last_name=patient.last_name,
+        gender=patient.gender,
+        age=int(patient.age),
+        chair_id=chair_id,
+    )
+
+    chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
+
+    new_patient.chair = chair
+
+    db.add(new_patient)
+    db.commit()
+    db.refresh(new_patient)
+
+    return {"message": "Patient's data stored successfully"}
 
 
 # * Create a function that will store the patient in the database when POST request is sent to the route

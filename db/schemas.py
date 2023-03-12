@@ -33,6 +33,7 @@ class GetChairData(BaseModel):
             }
         }
 
+
 # ? this ReadChairData schema use when creating a route for the upcoming sensors' data
 class ReadChairData(GetChairData):
     chair_id: int
@@ -45,6 +46,24 @@ class ReadChairData(GetChairData):
                 "heart_rate": 122.5,
                 "sugar_level": 70.45,
                 "chair_id": 55,
+            }
+        }
+
+
+class PatientData(BaseModel):
+    first_name: str
+    last_name: str
+    gender: str
+    age: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "first_name": "Mohamed",
+                "last_name": "Badr",
+                "gender": "male",
+                "age": 23,
             }
         }
 

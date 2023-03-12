@@ -8,7 +8,7 @@ from auth.schema import Token
 
 router = APIRouter(tags=["patient"], prefix="/patient")
 
-
+"""
 # * Create a route that will register a new patient in the database when POST request is sent to the route
 @router.post("/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
 async def signup(
@@ -50,3 +50,22 @@ async def get_info(
         )
     current_user = authorize.get_jwt_subject()
     return crud.user_info(user_id=current_user, db=db)
+"""
+
+
+@router.post("/info", status_code=status.HTTP_201_CREATED)
+async def register_patient(
+    patient: schemas.PatientData,
+    authorize: AuthJWT = Depends(),
+    db: Session = Depends(database.get_db),
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
+        )
+    
+    chair_id = authorize.get_jwt_subject()
+    return crud.register_patient(db=db, patient=patient, chair_id=chair_id)
+

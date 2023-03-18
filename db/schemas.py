@@ -55,6 +55,7 @@ class PatientData(BaseModel):
     last_name: str
     gender: str
     age: int
+    chair_id: int
 
     class Config:
         orm_mode = True
@@ -64,6 +65,7 @@ class PatientData(BaseModel):
                 "last_name": "Badr",
                 "gender": "male",
                 "age": 23,
+                "chair_id": 7,
             }
         }
 

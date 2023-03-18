@@ -218,7 +218,7 @@ def get_chair_data(chair_id: int, db: Session):
     return schemas.GetChairData.from_orm(sensor_data)
 
 
-def register_patient(db: Session, patient: schemas.PatientData, chair_id: int):
+def add_new_patient(db: Session, patient: schemas.PatientData, chair_id: int):
     """
     We use this function to store the patient's data in the database
     with the chair_id they use
@@ -249,6 +249,20 @@ def register_patient(db: Session, patient: schemas.PatientData, chair_id: int):
     db.refresh(new_patient)
 
     return {"message": "Patient's data stored successfully"}
+
+
+def patient_info(chair_id: int, db: Session):
+    db_patient = (
+        db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
+    )
+
+    if db_patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No Patient currently use this chair",
+        )
+
+    return db_patient
 
 
 # * Create a function that will store the patient in the database when POST request is sent to the route

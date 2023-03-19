@@ -65,7 +65,7 @@ class Patient(Base):
 class CareGiver(Base):
     __tablename__ = "caregiver"
 
-    id = Column(String, primary_key=True, default=str(uuid.uuid4()), index=True)
+    id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String)
@@ -74,26 +74,16 @@ class CareGiver(Base):
     patients = relationship(
         "Patient", secondary=association_table, back_populates="caregivers"
     )
-    # caregiverphone_id = Column(Integer, ForeignKey("caregiverphone.id"), index=True)
-    # caregiverphone = relationship("CareGiverPhone", back_populates="caregiver")
+    caregiverphone_id = Column(Integer, ForeignKey("caregiverphone.id"), index=True)
+    caregiverphone = relationship("CareGiverPhone", back_populates="caregiver")
 
     def __str__(self):
         return f"Care Giver : {self.first_name}"
 
 
-# class CareGiverPhone(Base):
-#     __tablename__ = "caregiverphone"
-#     id = Column(Integer, primary_key=True, index=True)
-#     phone_number = Column(String)
-#     caregiver_id = Column(Integer, ForeignKey("caregiver.id"), index=True)
-#     caregiver = relationship("CareGiver", back_populates="caregiverphone")
-
-
-# class Associatian(Base):
-#     __tablename__ = "care_giver_patient"
-
-#     caregiver_id = Column(Integer, ForeignKey("care_giver.id"), primary_key=True)
-#     patient_id = Column(Integer, ForeignKey("patient.id"), primary_key=True)
-
-#     caregiver = relationship("CareGiver", back_populates="patient_id")
-#     patient = relationship("Patient", back_populates="caregiver_id")
+class CareGiverPhone(Base):
+    __tablename__ = "caregiverphone"
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String)
+    caregiver_id = Column(Integer, ForeignKey("caregiver.id"), index=True)
+    caregiver = relationship("CareGiver", back_populates="caregiverphone")

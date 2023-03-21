@@ -216,7 +216,7 @@ def get_chair_data(chair_id: int, db: Session):
     return schemas.GetChairData.from_orm(sensor_data)
 
 
-def add_new_patient(db: Session, patient: schemas.PatientData, chair_id: int):
+def add_new_patient(db: Session, patient: schemas.PatientDataRegister):
     """
     We use this function to store the patient's data in the database
     with the chair_id they use
@@ -230,15 +230,21 @@ def add_new_patient(db: Session, patient: schemas.PatientData, chair_id: int):
         Dict: we return a Dict message tell us we stored patient's data successfully
     """
 
+    chair_info = {"chair_id": patient.chair_id, "password": patient.password}
+
+    login_chair_schema = schemas.ChairRegistration(**chair_info)
+
+    db_chair = chair_login(db=db, chair=login_chair_schema)
+
     new_patient = models.Patient(
         first_name=patient.first_name,
         last_name=patient.last_name,
         gender=patient.gender,
         age=int(patient.age),
-        chair_id=chair_id,
+        chair_id=patient.chair_id,
     )
 
-    chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
+    chair = db.query(models.Chair).filter(models.Chair.id == patient.chair_id).first()
 
     new_patient.chair = chair
 

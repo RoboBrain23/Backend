@@ -69,3 +69,17 @@ class PatientData(BaseModel):
             }
         }
 
+class PatientDataRegister(PatientData):
+    password: str
+    
+    class Config:
+        schema_extra = {
+            "example": {
+                "first_name": "Mohamed",
+                "last_name": "Badr",
+                "gender": "male",
+                "age": 23,
+                "chair_id": 55,
+                "password": "mypassword"
+            }
+        }

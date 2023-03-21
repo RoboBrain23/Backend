@@ -11,19 +11,10 @@ router = APIRouter(tags=["patient"], prefix="/patient")
 
 @router.post("/info", status_code=status.HTTP_201_CREATED)
 def register_patient(
-    patient: schemas.PatientData,
-    authorize: AuthJWT = Depends(),
+    patient: schemas.PatientDataRegister,
     db: Session = Depends(database.get_db),
 ):
-    try:
-        authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
-
-    chair_id = authorize.get_jwt_subject()
-    return crud.add_new_patient(db=db, patient=patient, chair_id=chair_id)
+    return crud.add_new_patient(db=db, patient=patient)
 
 
 # TODO: Complete the following route for returning patient information

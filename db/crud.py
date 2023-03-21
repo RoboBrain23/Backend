@@ -252,7 +252,7 @@ def add_new_patient(db: Session, patient: schemas.PatientDataRegister):
     db.commit()
     db.refresh(new_patient)
 
-    return {"message": "Patient's data stored successfully"}
+    return new_patient
 
 
 def patient_info(chair_id: int, db: Session):
@@ -265,5 +265,30 @@ def patient_info(chair_id: int, db: Session):
             status_code=status.HTTP_404_NOT_FOUND,
             detail="No Patient currently use this chair",
         )
+
+    return db_patient
+
+
+def update_patient_chair(
+    current_chair_id: int, new_chair: schemas.ChairRegistration, db: Session
+):
+    db_patient = (
+        db.query(models.Patient)
+        .filter(models.Patient.chair_id == current_chair_id)
+        .first()
+    )
+
+    login_to_new_chair = chair_login(db=db, chair=new_chair)
+
+    db_patient.chair_id = new_chair.chair_id
+
+    db_chair = (
+        db.query(models.Chair).filter(models.Chair.id == new_chair.chair_id).first()
+    )
+
+    db_patient.chair = db_chair
+
+    db.commit()
+    db.refresh(db_patient)
 
     return db_patient

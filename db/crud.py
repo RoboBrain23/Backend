@@ -217,17 +217,33 @@ def get_chair_data(chair_id: int, db: Session):
     return schemas.GetChairData.from_orm(sensor_data)
 
 
-# * Create a function that will store the patient in the database when POST request is sent to the route
+def add_new_patient(db: Session, patient: schemas.PatientDataRegister):
+    """
+    We use this function to store the patient's data in the database
+    with the chair_id they use
+
+    Args:
+        db (Session): The database session that we will use to validate the data
+        patient (schemas.PatientData): The patient's data that we want to store in the database
+        chair_id (int): The chair_id of the chair that the patient use and stored in the token
+
+    Returns:
+        Dict: we return a Dict message tell us we stored patient's data successfully
+    """
+
+    chair_info = {"chair_id": patient.chair_id, "password": patient.password}
+
+    login_chair_schema = schemas.ChairRegistration(**chair_info)
+
+    db_chair = chair_login(db=db, chair=login_chair_schema)
 
 
-def signup_caregiver(
-    db: Session, authorize: AuthJWT, caregiver: schemas.SignUpCareGiver
-):
-    # Check for mail if it is stored in the db or not
+# @param db: Session ==> this is the database session that we will use to store the data in the database
+# @param patient: schemas.Patient ==> this is the patient that we will store in the database
+def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
+    # * Check if the email is already exist in the database
     db_email = (
-        db.query(models.CareGiver)
-        .filter(models.CareGiver.email == caregiver.email)
-        .first()
+        db.query(models.Patient).filter(models.Patient.email == patient.email).first()
     )
 
     # * if the email is already exist raise an HTTPException with status code 400 and a message
@@ -236,62 +252,76 @@ def signup_caregiver(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This email is already exist",
         )
+
+    # * Check the username is already exist in the database
     db_username = (
-        db.query(models.CareGiver)
-        .filter(models.CareGiver.username == caregiver.username)
+        db.query(models.Patient)
+        .filter(models.Patient.username == patient.username)
+        .first()
+    )
+
+    if db_patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No Patient currently use this chair",
+        )
+
+    db_id = db.query(models.Patient).filter(models.Patient.id == patient.id).first()
+
+    # * if the username is already exist raise an HTTPException with status code 400 and a message
+    if db_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This id is already exist",
+        )
+
+    db_phone_number = (
+        db.query(models.Patient)
+        .filter(models.Patient.phone_number == patient.phone_number)
         .first()
     )
 
     # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_username is not None:
+    if db_phone_number is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This username is already exist",
+            detail="This Phone Number is already exist",
         )
 
-    db_id = (
-        db.query(models.CareGiver).filter(models.CareGiver.id == caregiver.id).first()
-    )
+    # * Create a new instance of Patient model to store the patient in the database
 
-    # * Create a new instance of CareGiver model to store the caregiver in the database
+    patient.id = int(patient.id)
+    patient.age = int(patient.age)
+    patient.password = create_hashed_password(patient.password)
 
-    caregiver.id = int(caregiver.id)
-    caregiver.age = int(caregiver.age)
-    caregiver.password = create_hashed_password(caregiver.password)
+    new_patient = models.Patient(**patient.dict())
 
-    new_caregiver = models.CareGiver(**caregiver.dict())
-
-    # * Add the new caregiver to the database session and commit the changes to the database
-    db.add(new_caregiver)
+    # * Add the new patient to the database session and commit the changes to the database
+    db.add(new_patient)
     db.commit()
-    db.refresh(new_caregiver)
+    db.refresh(new_patient)
 
-    return generate_tokens(authorize=authorize, id=new_caregiver.id)
+    return generate_tokens(authorize=authorize, id=new_patient.id)
 
 
-def get_caregiver(db: Session, authorize: AuthJWT, caregiver: schemas.Login):
-    db_caregiver = (
-        db.query(models.CareGiver)
-        .filter(caregiver.email == models.CareGiver.email)
-        .first()
+def get_user(db: Session, authorize: AuthJWT, patient: schemas.Login):
+    user = (
+        db.query(models.Patient).filter(patient.email == models.Patient.email).first()
     )
-
-    if db_caregiver and verify_password(caregiver.password, db_caregiver.password):
-        return generate_tokens(authorize=authorize, id=db_caregiver.id)
+    if user and verify_password(patient.password, user.password):
+        return generate_tokens(authorize=authorize, id=user.id)
     return None
 
 
-def login_caregiver(db: Session, authorize: AuthJWT, caregiver: schemas.Login):
-    db_caregiver = get_caregiver(db=db, authorize=authorize, caregiver=caregiver)
-    if db_caregiver is None:
+def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
+    user = get_user(db=db, authorize=authorize, patient=patient)
+    if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
         )
-    return db_caregiver
+    return user
 
 
-def caregiver_info(db: Session, caregiver_id: int):
-    caregiver = (
-        db.query(models.CareGiver).filter(models.CareGiver.id == caregiver_id).first()
-    )
-    return schemas.CareGiverInfo.from_orm(caregiver)
+def user_info(db: Session, user_id: int):
+    user = db.query(models.Patient).filter(models.Patient.id == user_id).first()
+    return schemas.Info.from_orm(user)

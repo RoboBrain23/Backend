@@ -17,18 +17,18 @@ class ChairRegistration(BaseModel):
 
 # ? this GetChairData schema used when creating a route for sending data from database
 class GetChairData(BaseModel):
-    body_temperature: float
+    temperature: float
     oximeter: float
-    heart_rate: float
+    pulse_rate: float
     sugar_level: float
 
     class Config:
         orm_mode = True
         schema_extra = {
             "example": {
-                "body_temperature": 36.5,
+                "temperature": 36.5,
                 "oximeter": 125.4,
-                "heart_rate": 122.5,
+                "pulse_rate": 122.5,
                 "sugar_level": 70.45,
             }
         }
@@ -41,19 +41,21 @@ class ReadChairData(GetChairData):
     class Config:
         schema_extra = {
             "example": {
-                "body_temperature": 36.5,
+                "temperature": 36.5,
                 "oximeter": 125.4,
-                "heart_rate": 122.5,
+                "pulse_rate": 122.5,
                 "sugar_level": 70.45,
                 "chair_id": 55,
             }
         }
 
 
-# * this login schema used when create login route to specify the request body
-class Login(BaseModel):
-    email: str
-    password: str
+class PatientData(BaseModel):
+    first_name: str
+    last_name: str
+    gender: str
+    age: int
+    chair_id: int
 
     class Config:
         orm_mode = True
@@ -65,49 +67,53 @@ class Login(BaseModel):
         }
 
 
-class SignUpCareGiver(BaseModel):
+# * this signup schema used when create signup route to specify the request body
+# * it also inherit from the login schema to add the email and password fields and the Config class
+class SignUp(Login):
     id: int
-    first_name: str
-    last_name: str
+    patient_full_name: str
     username: str
-    email: str
-    password: str
+    phone_number: str
+    address: str
+    gender: str
     age: int
 
     class Config:
-        orm_mode = True
         schema_extra = {
             "example": {
                 "id": 1,
-                "first_name": "Ahmed",
-                "last_name": "Esmail",
-                "username": "ahmedesmail07",
-                "email": "example@mail.com",
+                "patient_full_name": "Mohamed Ali",
+                "username": "moAli123",
                 "password": "mypassword",
-                "age": 23,
+                "email": "example@mail.com",
+                "phone_number": "0111122234",
+                "address": "Zagazig, Egypt",
+                "gender": "male",
+                "age": 25,
             }
         }
 
 
-class CareGiverInfo(BaseModel):
+class Info(BaseModel):
     id: int
-    first_name: str
-    last_name: str
-    username: str
+    patient_full_name: str
     email: str
-    password: str
+    username: str
+    phone_number: str
+    address: str
+    gender: str
     age: int
 
     class Config:
-        orm_mode = True
         schema_extra = {
-            "Example": {
+            "example": {
                 "id": 1,
-                "first_name": "Ahmed",
-                "last_name": "Esmail",
-                "username": "ahmedesmail07",
+                "patient_full_name": "Mohamed Ali",
+                "username": "moAli123",
                 "email": "example@mail.com",
-                "password": "mypassword",
-                "age": 23,
+                "phone_number": "0111122234",
+                "address": "Zagazig, Egypt",
+                "gender": "male",
+                "age": 25,
             }
         }

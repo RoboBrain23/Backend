@@ -9,44 +9,32 @@ from auth.schema import Token
 router = APIRouter(tags=["patient"], prefix="/patient")
 
 
-# * Create a route that will register a new patient in the database when POST request is sent to the route
-@router.post("/signup", response_model=Token, status_code=status.HTTP_201_CREATED)
-async def signup(
-    patient: schemas.SignUp,
-    authorize: AuthJWT = Depends(),
+@router.post(
+    "/info", response_model=schemas.PatientData, status_code=status.HTTP_201_CREATED
+)
+def register_patient(
+    patient: schemas.PatientDataRegister,
     db: Session = Depends(database.get_db),
 ):
-    return crud.signup(patient=patient, db=db, authorize=authorize)
+    return crud.add_new_patient(db=db, patient=patient)
 
 
-# TODO: Create 2 Routes
+@router.get(
+    "/info/{chair_id}",
+    status_code=status.HTTP_200_OK,
+    response_model=schemas.PatientData,
+)
+def get_patient_data(chair_id: int, db: Session = Depends(database.get_db)):
+    return crud.patient_info(chair_id=chair_id, db=db)
 
-# ? Create a route that will login the patient
-# * POST  ==>  "/login"
 
-
-@router.post("/login", response_model=Token, status_code=status.HTTP_200_OK)
-async def login(
-    patient: schemas.Login,
-    authorize: AuthJWT = Depends(),
+# TODO: Add a logic for checking if the new chair is currently used or not before use it
+@router.put("/chair-update/{chair_id}", status_code=status.HTTP_200_OK)
+def update_chair(
+    chair_id: int,
+    new_chair: schemas.ChairRegistration,
     db: Session = Depends(database.get_db),
 ):
-    return crud.login(db=db, authorize=authorize, patient=patient)
-
-
-# ? Create a route that will return the patient data when authontication is successful
-# * GET  ==>  "/me"
-
-
-@router.get("/me",response_model=schemas.Info, status_code=200)
-async def get_info(
-    authorize: AuthJWT = Depends(), db: Session = Depends(database.get_db)
-):
-    try:
-        authorize.jwt_required()
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
-    current_user = authorize.get_jwt_subject()
-    return crud.user_info(user_id=current_user, db=db)
+    return crud.update_patient_chair(
+        current_chair_id=chair_id, new_chair=new_chair, db=db
+    )

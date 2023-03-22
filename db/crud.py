@@ -216,94 +216,79 @@ def get_chair_data(chair_id: int, db: Session):
     return schemas.GetChairData.from_orm(sensor_data)
 
 
-# * Create a function that will store the patient in the database when POST request is sent to the route
+def add_new_patient(db: Session, patient: schemas.PatientDataRegister):
+    """
+    We use this function to store the patient's data in the database
+    with the chair_id they use
 
+    Args:
+        db (Session): The database session that we will use to validate the data
+        patient (schemas.PatientData): The patient's data that we want to store in the database
+        chair_id (int): The chair_id of the chair that the patient use and stored in the token
 
-# @param db: Session ==> this is the database session that we will use to store the data in the database
-# @param patient: schemas.Patient ==> this is the patient that we will store in the database
-def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
-    # * Check if the email is already exist in the database
-    db_email = (
-        db.query(models.Patient).filter(models.Patient.email == patient.email).first()
+    Returns:
+        Dict: we return a Dict message tell us we stored patient's data successfully
+    """
+
+    chair_info = {"chair_id": patient.chair_id, "password": patient.password}
+
+    login_chair_schema = schemas.ChairRegistration(**chair_info)
+
+    db_chair = chair_login(db=db, chair=login_chair_schema)
+
+    new_patient = models.Patient(
+        first_name=patient.first_name,
+        last_name=patient.last_name,
+        gender=patient.gender,
+        age=int(patient.age),
+        chair_id=patient.chair_id,
     )
 
-    # * if the email is already exist raise an HTTPException with status code 400 and a message
-    if db_email is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This email is already exist",
-        )
+    chair = db.query(models.Chair).filter(models.Chair.id == patient.chair_id).first()
 
-    # * Check the username is already exist in the database
-    db_username = (
-        db.query(models.Patient)
-        .filter(models.Patient.username == patient.username)
-        .first()
-    )
+    new_patient.chair = chair
 
-    # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_username is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This username is already exist",
-        )
-
-    db_id = db.query(models.Patient).filter(models.Patient.id == patient.id).first()
-
-    # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_id is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This id is already exist",
-        )
-
-    db_phone_number = (
-        db.query(models.Patient)
-        .filter(models.Patient.phone_number == patient.phone_number)
-        .first()
-    )
-
-    # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_phone_number is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This Phone Number is already exist",
-        )
-
-    # * Create a new instance of Patient model to store the patient in the database
-
-    patient.id = int(patient.id)
-    patient.age = int(patient.age)
-    patient.password = create_hashed_password(patient.password)
-
-    new_patient = models.Patient(**patient.dict())
-
-    # * Add the new patient to the database session and commit the changes to the database
     db.add(new_patient)
     db.commit()
     db.refresh(new_patient)
 
-    return generate_tokens(authorize=authorize, id=new_patient.id)
+    return new_patient
 
 
-def get_user(db: Session, authorize: AuthJWT, patient: schemas.Login):
-    user = (
-        db.query(models.Patient).filter(patient.email == models.Patient.email).first()
+def patient_info(chair_id: int, db: Session):
+    db_patient = (
+        db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
     )
-    if user and verify_password(patient.password, user.password):
-        return generate_tokens(authorize=authorize, id=user.id)
-    return None
 
-
-def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
-    user = get_user(db=db, authorize=authorize, patient=patient)
-    if user is None:
+    if db_patient is None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No Patient currently use this chair",
         )
-    return user
+
+    return db_patient
 
 
-def user_info(db: Session, user_id: int):
-    user = db.query(models.Patient).filter(models.Patient.id == user_id).first()
-    return schemas.Info.from_orm(user)
+def update_patient_chair(
+    current_chair_id: int, new_chair: schemas.ChairRegistration, db: Session
+):
+    db_patient = (
+        db.query(models.Patient)
+        .filter(models.Patient.chair_id == current_chair_id)
+        .first()
+    )
+
+    login_to_new_chair = chair_login(db=db, chair=new_chair)
+
+    db_patient.chair_id = new_chair.chair_id
+
+    db_chair = (
+        db.query(models.Chair).filter(models.Chair.id == new_chair.chair_id).first()
+    )
+
+    db_patient.chair = db_chair
+
+    db.commit()
+    db.refresh(db_patient)
+
+    return db_patient

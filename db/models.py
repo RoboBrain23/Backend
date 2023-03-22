@@ -1,7 +1,27 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Time, Date
+from sqlalchemy import Column, String, Integer, Float, ForeignKey, Time, Date, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db.database import Base
+
+
+# this table is a "junction table" to link between two tables (patient,caregiver)
+association_table = Table(
+    "association",  # Table Name
+    Base.metadata,
+    Column(
+        "patient",
+        ForeignKey("patient.id"),
+    ),
+    Column("caregiver", ForeignKey("caregiver.id")),
+)
+# # this table is a "junction table" to link between two tables (chair,caregiver)
+# linking_table = Table(
+#     "linking",  # Table Name
+#     Base.metadata,
+#     Column(
+#         "chair", ForeignKey("chair.id"), Column("caregiver", ForeignKey("caregiver.id"))
+#     ),
+# )
 
 
 class Chair(Base):
@@ -45,6 +65,46 @@ class Patient(Base):
     # ? one-to-one relationship with chair
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
     chair = relationship("Chair", uselist=False, backref="patient")
+    caregivers = relationship(
+        "CareGiver", secondary=association_table, back_populates="patients"
+    )
 
 
 # TODO: Create Caregiver table with many-to-many relationship with patient table
+class CareGiver(Base):
+    __tablename__ = "caregiver"
+
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    username = Column(String)
+    email = Column(String)
+    password = Column(String)
+    age = Column(Integer)
+    patients = relationship(
+        "Patient", secondary=association_table, back_populates="caregivers"
+    )
+    # caregiverphone_id = Column(
+    #     Integer,
+    #     ForeignKey("caregiverphone.id"),
+    #     index=True,
+    # )
+    # caregiverphone = relationship(
+    #     "CareGiverPhone", back_populates="caregiver", foreign_keys=[caregiverphone_id]
+    # )
+    phones = relationship("CareGiverPhone", back_populates="caregiver")
+
+    def __str__(self):
+        return f"Care Giver : {self.first_name}"
+
+
+class CareGiverPhone(Base):
+    __tablename__ = "caregiverphone"
+    id = Column(Integer, primary_key=True, index=True)
+    phone_number = Column(String)
+    caregiver_id = Column(
+        Integer, ForeignKey("caregiver.id"), index=True, nullable=False
+    )
+    caregiver = relationship(
+        "CareGiver", back_populates="phones", remote_side=[CareGiver.id]
+    )

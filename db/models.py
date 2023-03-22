@@ -71,7 +71,7 @@ class Patient(Base):
 
 
 # TODO: Create Caregiver table with many-to-many relationship with patient table
-class CareGiver(Base):
+class CareGiver(BaseModel):
     __tablename__ = "caregiver"
 
     id = Column(Integer, primary_key=True, index=True)

@@ -2,8 +2,9 @@ from sqlalchemy import Column, String, Integer, Float, ForeignKey, Time, Date, T
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db.database import Base
-import uuid
+from pydantic import BaseModel
 
+# this table is a "junction table" to link between two tables (patient,caregiver)
 association_table = Table(
     "association",  # Table Name
     Base.metadata,
@@ -13,6 +14,14 @@ association_table = Table(
     ),
     Column("caregiver", ForeignKey("caregiver.id")),
 )
+# # this table is a "junction table" to link between two tables (chair,caregiver)
+# linking_table = Table(
+#     "linking",  # Table Name
+#     Base.metadata,
+#     Column(
+#         "chair", ForeignKey("chair.id"), Column("caregiver", ForeignKey("caregiver.id"))
+#     ),
+# )
 
 
 class Chair(Base):
@@ -68,14 +77,22 @@ class CareGiver(Base):
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String)
     last_name = Column(String)
+    username = Column(String)
     email = Column(String)
     password = Column(String)
     age = Column(Integer)
     patients = relationship(
         "Patient", secondary=association_table, back_populates="caregivers"
     )
-    caregiverphone_id = Column(Integer, ForeignKey("caregiverphone.id"), index=True)
-    caregiverphone = relationship("CareGiverPhone", back_populates="caregiver")
+    # caregiverphone_id = Column(
+    #     Integer,
+    #     ForeignKey("caregiverphone.id"),
+    #     index=True,
+    # )
+    # caregiverphone = relationship(
+    #     "CareGiverPhone", back_populates="caregiver", foreign_keys=[caregiverphone_id]
+    # )
+    phones = relationship("CareGiverPhone", back_populates="caregiver")
 
     def __str__(self):
         return f"Care Giver : {self.first_name}"
@@ -85,5 +102,9 @@ class CareGiverPhone(Base):
     __tablename__ = "caregiverphone"
     id = Column(Integer, primary_key=True, index=True)
     phone_number = Column(String)
-    caregiver_id = Column(Integer, ForeignKey("caregiver.id"), index=True)
-    caregiver = relationship("CareGiver", back_populates="caregiverphone")
+    caregiver_id = Column(
+        Integer, ForeignKey("caregiver.id"), index=True, nullable=False
+    )
+    caregiver = relationship(
+        "CareGiver", back_populates="phones", remote_side=[CareGiver.id]
+    )

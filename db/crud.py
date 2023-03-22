@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 import db.schemas as schemas, db.models as models
+from . import schemas
 from fastapi import HTTPException, status, Depends
 from fastapi_jwt_auth import AuthJWT
 from fastapi.encoders import jsonable_encoder
@@ -219,12 +220,14 @@ def get_chair_data(chair_id: int, db: Session):
 # * Create a function that will store the patient in the database when POST request is sent to the route
 
 
-# @param db: Session ==> this is the database session that we will use to store the data in the database
-# @param patient: schemas.Patient ==> this is the patient that we will store in the database
-def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
-    # * Check if the email is already exist in the database
+def signup_caregiver(
+    db: Session, authorize: AuthJWT, caregiver: schemas.SignUpCareGiver
+):
+    # Check for mail if it is stored in the db or not
     db_email = (
-        db.query(models.Patient).filter(models.Patient.email == patient.email).first()
+        db.query(models.CareGiver)
+        .filter(models.CareGiver.email == caregiver.email)
+        .first()
     )
 
     # * if the email is already exist raise an HTTPException with status code 400 and a message
@@ -233,11 +236,9 @@ def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This email is already exist",
         )
-
-    # * Check the username is already exist in the database
     db_username = (
-        db.query(models.Patient)
-        .filter(models.Patient.username == patient.username)
+        db.query(models.CareGiver)
+        .filter(models.CareGiver.username == caregiver.username)
         .first()
     )
 
@@ -248,62 +249,49 @@ def signup(db: Session, authorize: AuthJWT, patient: schemas.SignUp):
             detail="This username is already exist",
         )
 
-    db_id = db.query(models.Patient).filter(models.Patient.id == patient.id).first()
+    db_id = (
+        db.query(models.CareGiver).filter(models.CareGiver.id == caregiver.id).first()
+    )
 
-    # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_id is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This id is already exist",
-        )
+    # * Create a new instance of CareGiver model to store the caregiver in the database
 
-    db_phone_number = (
-        db.query(models.Patient)
-        .filter(models.Patient.phone_number == patient.phone_number)
+    caregiver.id = int(caregiver.id)
+    caregiver.age = int(caregiver.age)
+    caregiver.password = create_hashed_password(caregiver.password)
+
+    new_caregiver = models.CareGiver(**caregiver.dict())
+
+    # * Add the new caregiver to the database session and commit the changes to the database
+    db.add(new_caregiver)
+    db.commit()
+    db.refresh(new_caregiver)
+
+    return generate_tokens(authorize=authorize, id=new_caregiver.id)
+
+
+def get_caregiver(db: Session, authorize: AuthJWT, caregiver: schemas.Login):
+    db_caregiver = (
+        db.query(models.CareGiver)
+        .filter(caregiver.email == models.CareGiver.email)
         .first()
     )
 
-    # * if the username is already exist raise an HTTPException with status code 400 and a message
-    if db_phone_number is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This Phone Number is already exist",
-        )
-
-    # * Create a new instance of Patient model to store the patient in the database
-
-    patient.id = int(patient.id)
-    patient.age = int(patient.age)
-    patient.password = create_hashed_password(patient.password)
-
-    new_patient = models.Patient(**patient.dict())
-
-    # * Add the new patient to the database session and commit the changes to the database
-    db.add(new_patient)
-    db.commit()
-    db.refresh(new_patient)
-
-    return generate_tokens(authorize=authorize, id=new_patient.id)
-
-
-def get_user(db: Session, authorize: AuthJWT, patient: schemas.Login):
-    user = (
-        db.query(models.Patient).filter(patient.email == models.Patient.email).first()
-    )
-    if user and verify_password(patient.password, user.password):
-        return generate_tokens(authorize=authorize, id=user.id)
+    if db_caregiver and verify_password(caregiver.password, db_caregiver.password):
+        return generate_tokens(authorize=authorize, id=db_caregiver.id)
     return None
 
 
-def login(db: Session, authorize: AuthJWT, patient: schemas.Login):
-    user = get_user(db=db, authorize=authorize, patient=patient)
-    if user is None:
+def login_caregiver(db: Session, authorize: AuthJWT, caregiver: schemas.Login):
+    db_caregiver = get_caregiver(db=db, authorize=authorize, caregiver=caregiver)
+    if db_caregiver is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid email or password"
         )
-    return user
+    return db_caregiver
 
 
-def user_info(db: Session, user_id: int):
-    user = db.query(models.Patient).filter(models.Patient.id == user_id).first()
-    return schemas.Info.from_orm(user)
+def caregiver_info(db: Session, caregiver_id: int):
+    caregiver = (
+        db.query(models.CareGiver).filter(models.CareGiver.id == caregiver_id).first()
+    )
+    return schemas.CareGiverInfo.from_orm(caregiver)

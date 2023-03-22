@@ -33,6 +33,7 @@ class GetChairData(BaseModel):
             }
         }
 
+
 # ? this ReadChairData schema use when creating a route for the upcoming sensors' data
 class ReadChairData(GetChairData):
     chair_id: int
@@ -64,41 +65,13 @@ class Login(BaseModel):
         }
 
 
-# * this signup schema used when create signup route to specify the request body
-# * it also inherit from the login schema to add the email and password fields and the Config class
-class SignUp(Login):
+class SignUpCareGiver(BaseModel):
     id: int
-    patient_full_name: str
+    first_name: str
+    last_name: str
     username: str
-    phone_number: str
-    address: str
-    gender: str
-    age: int
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "id": 1,
-                "patient_full_name": "Mohamed Ali",
-                "username": "moAli123",
-                "password": "mypassword",
-                "email": "example@mail.com",
-                "phone_number": "0111122234",
-                "address": "Zagazig, Egypt",
-                "gender": "male",
-                "age": 25,
-            }
-        }
-
-
-class Info(BaseModel):
-    id: int
-    patient_full_name: str
     email: str
-    username: str
-    phone_number: str
-    address: str
-    gender: str
+    password: str
     age: int
 
     class Config:
@@ -106,12 +79,35 @@ class Info(BaseModel):
         schema_extra = {
             "example": {
                 "id": 1,
-                "patient_full_name": "Mohamed Ali",
-                "username": "moAli123",
+                "first_name": "Ahmed",
+                "last_name": "Esmail",
+                "username": "ahmedesmail07",
                 "email": "example@mail.com",
-                "phone_number": "0111122234",
-                "address": "Zagazig, Egypt",
-                "gender": "male",
-                "age": 25,
+                "password": "mypassword",
+                "age": 23,
+            }
+        }
+
+
+class CareGiverInfo(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    username: str
+    email: str
+    password: str
+    age: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "Example": {
+                "id": 1,
+                "first_name": "Ahmed",
+                "last_name": "Esmail",
+                "username": "ahmedesmail07",
+                "email": "example@mail.com",
+                "password": "mypassword",
+                "age": 23,
             }
         }

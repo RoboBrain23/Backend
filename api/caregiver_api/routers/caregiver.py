@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-import db.schemas as schemas, db.database as database, db.crud as crud, db.models as models
 from fastapi_jwt_auth import AuthJWT
 from fastapi.encoders import jsonable_encoder
 from auth.schema import Token
+import db.database as database, api.caregiver_api.db.schemas as schemas, api.caregiver_api.db.crud as crud
+
 
 router = APIRouter(tags=["caregiver"], prefix="/caregiver")
 

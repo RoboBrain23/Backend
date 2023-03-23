@@ -74,7 +74,7 @@ class Patient(Base):
 class CareGiver(Base):
     __tablename__ = "caregiver"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     first_name = Column(String)
     last_name = Column(String)
     username = Column(String)

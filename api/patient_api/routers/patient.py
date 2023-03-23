@@ -1,19 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-import db.schemas as schemas, db.database as database, db.crud as crud, db.models as models
-from fastapi_jwt_auth import AuthJWT
-from fastapi.encoders import jsonable_encoder
-from auth.schema import Token
-
+import db.database as database, api.patient_api.db.crud as crud
+from api.patient_api.db.schemas import PatientData, PatientDataRegister
+from api.chair_api.db.schemas import ChairRegistration
 
 router = APIRouter(tags=["patient"], prefix="/patient")
 
 
-@router.post(
-    "/info", response_model=schemas.PatientData, status_code=status.HTTP_201_CREATED
-)
+@router.post("/info", response_model=PatientData, status_code=status.HTTP_201_CREATED)
 def register_patient(
-    patient: schemas.PatientDataRegister,
+    patient: PatientDataRegister,
     db: Session = Depends(database.get_db),
 ):
     return crud.add_new_patient(db=db, patient=patient)
@@ -22,7 +18,7 @@ def register_patient(
 @router.get(
     "/info/{chair_id}",
     status_code=status.HTTP_200_OK,
-    response_model=schemas.PatientData,
+    response_model=PatientData,
 )
 def get_patient_data(chair_id: int, db: Session = Depends(database.get_db)):
     return crud.patient_info(chair_id=chair_id, db=db)
@@ -32,7 +28,7 @@ def get_patient_data(chair_id: int, db: Session = Depends(database.get_db)):
 @router.put("/chair-update/{chair_id}", status_code=status.HTTP_200_OK)
 def update_chair(
     chair_id: int,
-    new_chair: schemas.ChairRegistration,
+    new_chair: ChairRegistration,
     db: Session = Depends(database.get_db),
 ):
     return crud.update_patient_chair(

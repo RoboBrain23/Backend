@@ -1,8 +1,8 @@
 from fastapi import FastAPI
-from db.database import engine, SessionLocal
+from db.database import engine
 from db.models import Base
-from routers.chair import router as chair_router
-from routers.patient import router as patient_router
+from api.chair_api.routers.chair import router as chair_router
+from api.patient_api.routers.patient import router as patient_router
 from routers.caregiver import router as caregiver_router
 from auth.schema import Settings
 from fastapi_jwt_auth import AuthJWT

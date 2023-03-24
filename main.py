@@ -25,8 +25,3 @@ Base.metadata.create_all(bind=engine)
 app.include_router(chair_router)
 app.include_router(patient_router)
 app.include_router(caregiver_router)
-
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}

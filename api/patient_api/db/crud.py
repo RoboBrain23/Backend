@@ -85,13 +85,17 @@ def update_patient_chair(
     Returns:
         Dict: Return an Dict with patient information after updating the chair
     """
-    db_patient = (
-        db.query(models.Patient)
-        .filter(models.Patient.chair_id == current_chair_id)
-        .first()
-    )
+    db_patient = patient_info(chair_id=current_chair_id, db=db)
 
     login_to_new_chair = chair_crud.chair_login(db=db, chair=new_chair)
+
+    new_chair_info = patient_info(chair_id=new_chair.chair_id, db=db)
+
+    if new_chair_info is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This chair is already connected to other patient",
+        )
 
     db_patient.chair_id = new_chair.chair_id
 

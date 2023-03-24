@@ -4,20 +4,14 @@ from main import app
 client = TestClient(app)
 
 
-def test_root():
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {"message": "Hello World"}
-
-
 class TestChair:
     # ? Test storing chair information
 
     def test_chair_registration(self):
-        item = {"chair_id": "5457", "password": "123456"}
+        item = {"chair_id": "77777", "password": "123456"}
         response = client.post("/chair/signup/", json=item)
         assert response.status_code == 201
-        assert response.json() == {"message": "Chair register successfully"}
+        assert response.json() == {"detail": "Chair register successfully"}
 
     def test_chair_registration_wrong(self):
         item = {"chair_id": "7879", "password": "123456"}
@@ -31,7 +25,7 @@ class TestChair:
         item = {"chair_id": "55", "password": "mypassword"}
         response = client.post("/chair/login/", json=item)
         assert response.status_code == 200
-        assert response.json() == {"message": "Chair login successfully"}
+        assert response.json() == {"detail": "Chair login successfully"}
 
     def test_chair_login_wrong(self):
         item = {"chair_id": "7", "password": "mypassword12"}
@@ -51,7 +45,7 @@ class TestChair:
         }
         response = client.post("/chair/data/", json=item)
         assert response.status_code == 201
-        assert response.json() == {"message": "Data has been stored successfully"}
+        assert response.json() == {"detail": "Data has been stored successfully"}
 
     def test_post_chair_data_wrong(self):
         item = {
@@ -80,4 +74,13 @@ class TestChair:
     def test_get_chair_data_wrong(self):
         response = client.get("/chair/data/88888")
         assert response.status_code == 404
-        assert response.json() == {"detail": "Data not found"}
+        assert response.json() == {"detail": "Chair not found"}
+
+    def test_get_chair_data_with_no_data_recorded(self):
+        resposne = client.get("/chair/data/4")
+        assert resposne.status_code == 404
+        assert resposne.json() == {"detail": "No data recorded for this chair id"}
+
+
+class TestPatient:
+    pass

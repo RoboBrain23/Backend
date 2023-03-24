@@ -19,7 +19,7 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
         HTTPException: If the chair_id already exist in the database we raise exception with status code 400
 
     Returns:
-        Dict : we return a message tell us that we store the chair data successfully
+        Dict : we return a detail tell us that we store the chair data successfully
     """
 
     db_chair = db.query(models.Chair).filter(chair.chair_id == models.Chair.id).first()
@@ -38,7 +38,7 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
     db.commit()
     db.refresh(new_chair)
 
-    return {"message": "Chair register successfully"}
+    return {"detail": "Chair register successfully"}
 
 
 def get_chair(db: Session, chair: schemas.ChairRegistration):
@@ -46,7 +46,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     This function validate the data that have been sent to login to specific chair
     First we check if the chair_id is exist in the database then verify and compare
     the password that send with the request
-    If everything go well then We return a message tell us the login done successfully
+    If everything go well then We return a detail tell us the login done successfully
     if not then return None which means noting found
 
     Args:
@@ -54,7 +54,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
         chair (schemas.ChairRegistration): The data that we want to validate with stored data (chair_id, password)
 
     Returns:
-        Dict : We return a message tell us the login done successfully
+        Dict : We return a detail tell us the login done successfully
         None : Return None when no chair exist in the database with this ID and password
     """
 
@@ -63,7 +63,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     )
 
     if current_chair and verify_password(chair.password, current_chair.password):
-        return {"message": "Chair login successfully"}
+        return {"detail": "Chair login successfully"}
     return None
 
 
@@ -79,7 +79,7 @@ def chair_login(db: Session, chair: schemas.ChairRegistration):
         HTTPException: If the chair_id not exist in the database we raise an exception with status code 404
 
     Returns:
-        Dict : We return a message tell us the login done successfully
+        Dict : We return a detail tell us the login done successfully
     """
 
     current_chair = get_chair(db=db, chair=chair)
@@ -103,7 +103,7 @@ def store_chair_data(db: Session, data: schemas.ReadChairData):
         HTTPException: We check if the chair is exist in the database, if not we raise an exception with code 404
 
     Returns:
-        Dict : we return a message tell us that the data stored successfully
+        Dict : we return a detail tell us that the data stored successfully
     """
 
     db_chair = db.query(models.Chair).filter(models.Chair.id == data.chair_id).first()
@@ -123,7 +123,7 @@ def store_chair_data(db: Session, data: schemas.ReadChairData):
     db.commit()
     db.refresh(new_data)
 
-    return {"message": "Data has been stored successfully"}
+    return {"detail": "Data has been stored successfully"}
 
 
 def get_chair_data(chair_id: int, db: Session):
@@ -137,10 +137,18 @@ def get_chair_data(chair_id: int, db: Session):
 
     Raises:
         HTTPException: If the ID not found we raise an exception with status code 404
+        HTTPException: If there is no Data recorded related to this chair id we raise exception with status code 404
 
     Returns:
         Dict: We return the data of the sonsors connected to the chair that have id = chair_id
     """
+    db_chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
+
+    if db_chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair not found"
+        )
+
     sensor_data = (
         db.query(models.SensorData)
         .filter(models.SensorData.chair_id == chair_id)
@@ -150,7 +158,8 @@ def get_chair_data(chair_id: int, db: Session):
 
     if sensor_data is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Data not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No data recorded for this chair id",
         )
 
     return schemas.GetChairData.from_orm(sensor_data)

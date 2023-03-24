@@ -14,13 +14,13 @@ class TestChair:
     # ? Test storing chair information
 
     def test_chair_registration(self):
-        item = {"chair_id": "4", "password": "123456"}
+        item = {"chair_id": "5457", "password": "123456"}
         response = client.post("/chair/signup/", json=item)
         assert response.status_code == 201
         assert response.json() == {"message": "Chair register successfully"}
 
     def test_chair_registration_wrong(self):
-        item = {"chair_id": "112321", "password": "123456"}
+        item = {"chair_id": "7879", "password": "123456"}
         response = client.post("/chair/signup/", json=item)
         assert response.status_code == 400
         assert response.json() == {"detail": "This Chair ID is already exist"}
@@ -28,7 +28,7 @@ class TestChair:
     # ? Test login to chair
 
     def test_chair_login(self):
-        item = {"chair_id": "50", "password": "mypassword"}
+        item = {"chair_id": "55", "password": "mypassword"}
         response = client.post("/chair/login/", json=item)
         assert response.status_code == 200
         assert response.json() == {"message": "Chair login successfully"}
@@ -47,7 +47,7 @@ class TestChair:
             "oximeter": "125.4",
             "pulse_rate": "122.5",
             "sugar_level": "70.45",
-            "chair_id": "50",
+            "chair_id": "55",
         }
         response = client.post("/chair/data/", json=item)
         assert response.status_code == 201
@@ -68,7 +68,7 @@ class TestChair:
     # ? Test retriving sensors' data
 
     def test_get_chair_data(self):
-        response = client.get("/chair/data/50")
+        response = client.get("/chair/data/55")
         assert response.status_code == 200
         assert response.json() == {
             "temperature": 36.5,

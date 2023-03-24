@@ -13,8 +13,7 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
 
     Args:
         db (Session): The database session that we will use to validate the data
-        patient (schemas.PatientData): The patient's data that we want to store in the database
-        chair_id (int): The chair_id of the chair that the patient use and stored in the token
+        patient (PatientDataRegistration): The patient's data that we want to store in the database
 
     Returns:
         Dict: we return a Dict message tell us we stored patient's data successfully
@@ -46,6 +45,19 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
 
 
 def patient_info(chair_id: int, db: Session):
+    """
+    We use this function to return patient's informations by recieving chair id
+
+    Args:
+        chair_id (int): The id of the chair that patient uses
+        db (Session): The database session that we will use to validate the data
+
+    Raises:
+        HTTPException: if there is no patient use the chair with id chair_id, we raise exception with status code 404
+
+    Returns:
+        Dict: we return a Dict with information of the patient that connect to the chair
+    """
     db_patient = (
         db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
     )
@@ -62,6 +74,17 @@ def patient_info(chair_id: int, db: Session):
 def update_patient_chair(
     current_chair_id: int, new_chair: ChairRegistration, db: Session
 ):
+    """
+    We use this function to update the current chair the patient use
+
+    Args:
+        current_chair_id (int): The chair that the user currently use
+        new_chair (ChairRegistration): The new chair id and password to connect it to the patient
+        db (Session): The database session that we will use to validate the data
+
+    Returns:
+        Dict: Return an Dict with patient information after updating the chair
+    """
     db_patient = (
         db.query(models.Patient)
         .filter(models.Patient.chair_id == current_chair_id)

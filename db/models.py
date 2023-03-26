@@ -1,4 +1,14 @@
-from sqlalchemy import Column, String, Integer, Float, ForeignKey, Time, Date, Table
+from sqlalchemy import (
+    Column,
+    String,
+    Integer,
+    Float,
+    ForeignKey,
+    Time,
+    Date,
+    Table,
+    Identity,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from db.database import Base
@@ -74,7 +84,12 @@ class Patient(Base):
 class CareGiver(Base):
     __tablename__ = "caregiver"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(
+        Integer,
+        Identity(start=1, increment=1, cycle=True, minvalue=1),
+        primary_key=True,
+        index=True,
+    )
     first_name = Column(String)
     last_name = Column(String)
     username = Column(String)

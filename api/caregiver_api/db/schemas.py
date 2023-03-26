@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
+
 
 # * Here we put our schemas to be used in the routes and the database models
 # * schemas work as blueprints for the database models and the routes request and response bodies
@@ -20,7 +22,6 @@ class Login(BaseModel):
 
 
 class SignUpCareGiver(BaseModel):
-    id: int
     first_name: str
     last_name: str
     username: str
@@ -32,7 +33,6 @@ class SignUpCareGiver(BaseModel):
         orm_mode = True
         schema_extra = {
             "example": {
-                "id": 1,
                 "first_name": "Ahmed",
                 "last_name": "Esmail",
                 "username": "ahmedesmail07",

@@ -36,13 +36,13 @@ def signup_caregiver(
             detail="This username is already exist",
         )
 
-    db_id = (
-        db.query(models.CareGiver).filter(models.CareGiver.id == caregiver.id).first()
-    )
+    # db_id = (
+    #     db.query(models.CareGiver).filter(models.CareGiver.id == caregiver.id).first()
+    # )
 
     # * Create a new instance of CareGiver model to store the caregiver in the database
 
-    caregiver.id = int(caregiver.id)
+    # caregiver.id = int(caregiver.id)
     caregiver.age = int(caregiver.age)
     caregiver.password = create_hashed_password(caregiver.password)
 

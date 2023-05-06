@@ -6,9 +6,9 @@ from sqlalchemy import create_engine
 # TODO: Just uncomment your Database url and comment the other one
 # TODO : Thanks Bro <3
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:manga2023@localhost/db1"
+# SQLALCHEMY_DATABASE_URL = "postgresql://postgres:manga2023@localhost/db1"
 
-# SQLALCHEMY_DATABASE_URL = "postgresql://postgres:mypassword@localhost/GP-Database"
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:mypassword@localhost/GP-Database"
 
 # * Create the engine that will be used to connect to the database
 engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)

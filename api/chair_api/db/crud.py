@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 import api.chair_api.db.schemas as schemas
 import db.models as models
-from db.crud import create_hashed_password, verify_password
+from db.crud import create_hashed_password, verify_password, generate_tokens
 from fastapi import HTTPException, status
+from fastapi_jwt_auth import AuthJWT
 
 
 def chair_signup(db: Session, chair: schemas.ChairRegistration):
@@ -67,7 +68,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     return None
 
 
-def chair_login(db: Session, chair: schemas.ChairRegistration):
+def chair_login(db: Session, chair: schemas.ChairRegistration, authorize: AuthJWT):
     """
     We use this function to login or access the chair with a specific id
 
@@ -87,10 +88,10 @@ def chair_login(db: Session, chair: schemas.ChairRegistration):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
         )
-    return current_chair
+    return generate_tokens(id=chair.chair_id, authorize=authorize)
 
 
-def store_chair_data(db: Session, data: schemas.ReadChairData):
+def store_chair_data(db: Session, data: schemas.GetChairData, chair_id: int):
     """
     This fucntion used to store the data coming from sensors but only when the chair is existing in the database
     if the chair not found we raise an exception, otherwise we store the data
@@ -106,16 +107,16 @@ def store_chair_data(db: Session, data: schemas.ReadChairData):
         Dict : we return a detail tell us that the data stored successfully
     """
 
-    db_chair = db.query(models.Chair).filter(models.Chair.id == data.chair_id).first()
+    db_chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
 
     if db_chair is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No Chair stored with this ID"
         )
 
-    new_data = models.SensorData(**data.dict())
+    new_data = models.SensorData(chair_id=chair_id, **data.dict())
 
-    chair = db.query(models.Chair).filter(data.chair_id == models.Chair.id).first()
+    chair = db.query(models.Chair).filter(chair_id == models.Chair.id).first()
 
     new_data.chair = chair
 

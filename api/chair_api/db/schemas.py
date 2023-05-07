@@ -20,7 +20,6 @@ class GetChairData(BaseModel):
     temperature: float
     oximeter: float
     pulse_rate: float
-    sugar_level: float
 
     class Config:
         orm_mode = True
@@ -29,7 +28,6 @@ class GetChairData(BaseModel):
                 "temperature": 36.5,
                 "oximeter": 125.4,
                 "pulse_rate": 122.5,
-                "sugar_level": 70.45,
             }
         }
 
@@ -44,7 +42,6 @@ class ReadChairData(GetChairData):
                 "temperature": 36.5,
                 "oximeter": 125.4,
                 "pulse_rate": 122.5,
-                "sugar_level": 70.45,
                 "chair_id": 55,
             }
         }

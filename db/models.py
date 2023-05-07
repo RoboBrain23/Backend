@@ -54,7 +54,6 @@ class SensorData(Base):
     temperature = Column(Float)
     pulse_rate = Column(Float)
     oximeter = Column(Float)
-    sugar_level = Column(Float)
     created_date = Column(Date, default=func.current_date())
     created_time = Column(Time, server_default=func.current_time())
 

@@ -68,7 +68,9 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     return None
 
 
-def chair_login(db: Session, chair: schemas.ChairRegistration, authorize: AuthJWT):
+def chair_login(
+    db: Session, chair: schemas.ChairRegistration, authorize: AuthJWT | None = None
+):
     """
     We use this function to login or access the chair with a specific id
 
@@ -88,6 +90,9 @@ def chair_login(db: Session, chair: schemas.ChairRegistration, authorize: AuthJW
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
         )
+    if authorize is None:
+        return {"details": "Patient Added successfully"}
+
     return generate_tokens(id=chair.chair_id, authorize=authorize)
 
 

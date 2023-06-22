@@ -6,6 +6,35 @@ import api.chair_api.db.crud as chair_crud
 from fastapi import HTTPException, status
 
 
+def patient_info(chair_id: int, db: Session, update: bool | None = None):
+    """
+    We use this function to return patient's informations by recieving chair id
+
+    Args:
+        chair_id (int): The id of the chair that patient uses
+        db (Session): The database session that we will use to validate the data
+
+    Raises:
+        HTTPException: if there is no patient use the chair with id chair_id, we raise exception with status code 404
+
+    Returns:
+        Dict: we return a Dict with information of the patient that connect to the chair
+    """
+    db_patient = (
+        db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
+    )
+
+    if db_patient is None and update is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No Patient currently use this chair",
+        )
+    elif db_patient is None and update:
+        return None
+
+    return db_patient
+
+
 def add_new_patient(db: Session, patient: PatientDataRegister):
     """
     We use this function to store the patient's data in the database
@@ -24,6 +53,12 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
     login_chair_schema = ChairRegistration(**chair_info)
 
     db_chair = chair_crud.chair_login(db=db, chair=login_chair_schema)
+
+    if patient_info(chair_id=patient.chair_id, db=db) is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This Chair is already in use.",
+        )
 
     new_patient = models.Patient(
         first_name=patient.first_name,
@@ -44,33 +79,6 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
     return new_patient
 
 
-def patient_info(chair_id: int, db: Session):
-    """
-    We use this function to return patient's informations by recieving chair id
-
-    Args:
-        chair_id (int): The id of the chair that patient uses
-        db (Session): The database session that we will use to validate the data
-
-    Raises:
-        HTTPException: if there is no patient use the chair with id chair_id, we raise exception with status code 404
-
-    Returns:
-        Dict: we return a Dict with information of the patient that connect to the chair
-    """
-    db_patient = (
-        db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
-    )
-
-    if db_patient is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No Patient currently use this chair",
-        )
-
-    return db_patient
-
-
 def update_patient_chair(
     current_chair_id: int, new_chair: ChairRegistration, db: Session
 ):
@@ -89,7 +97,7 @@ def update_patient_chair(
 
     login_to_new_chair = chair_crud.chair_login(db=db, chair=new_chair)
 
-    new_chair_info = patient_info(chair_id=new_chair.chair_id, db=db)
+    new_chair_info = patient_info(chair_id=new_chair.chair_id, db=db, update=True)
 
     if new_chair_info is not None:
         raise HTTPException(

@@ -38,13 +38,26 @@ class Chair(Base):
     __tablename__ = "chair"
 
     id = Column(Integer, primary_key=True, index=True)
+    parcode = Column(Integer, unique=True, index=True)
     password = Column(String)
 
     # ? relationship with sensor_data
     sensor_data = relationship("SensorData", back_populates="chair")
+    location = relationship("location", uselist=False, backref="chair")
 
     def __str__(self):
         return f'"id": {self.id}, "password": {self.password}'
+
+
+class Location(Base):
+    __tablename__ = "location"
+
+    id = Column(Integer, primary_key=True, index=True)
+    latitude = Column(String)
+    longitude = Column(String)
+
+    chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
+    chair = relationship("Chair", back_populates="location")
 
 
 class SensorData(Base):
@@ -69,7 +82,7 @@ class Patient(Base):
     first_name = Column(String)
     last_name = Column(String)
     gender = Column(String)
-    age = Column(String)
+    age = Column(Integer)
 
     # ? one-to-one relationship with chair
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)

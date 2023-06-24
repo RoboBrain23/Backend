@@ -23,7 +23,9 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
         Dict : we return a detail tell us that we store the chair data successfully
     """
 
-    db_chair = db.query(models.Chair).filter(chair.chair_id == models.Chair.id).first()
+    db_chair = (
+        db.query(models.Chair).filter(chair.chair_id == models.Chair.parcode).first()
+    )
 
     if db_chair is not None:
         raise HTTPException(
@@ -32,7 +34,7 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
         )
 
     new_chair = models.Chair(
-        id=chair.chair_id, password=create_hashed_password(chair.password)
+        parcode=chair.chair_id, password=create_hashed_password(chair.password)
     )
 
     db.add(new_chair)
@@ -60,7 +62,7 @@ def get_chair(db: Session, chair: schemas.ChairRegistration):
     """
 
     current_chair = (
-        db.query(models.Chair).filter(models.Chair.id == chair.chair_id).first()
+        db.query(models.Chair).filter(models.Chair.parcode == chair.chair_id).first()
     )
 
     if current_chair and verify_password(chair.password, current_chair.password):
@@ -112,7 +114,7 @@ def store_chair_data(db: Session, data: schemas.GetChairData, chair_id: int):
         Dict : we return a detail tell us that the data stored successfully
     """
 
-    db_chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
+    db_chair = db.query(models.Chair).filter(models.Chair.parcode == chair_id).first()
 
     if db_chair is None:
         raise HTTPException(
@@ -121,7 +123,7 @@ def store_chair_data(db: Session, data: schemas.GetChairData, chair_id: int):
 
     new_data = models.SensorData(chair_id=chair_id, **data.dict())
 
-    chair = db.query(models.Chair).filter(chair_id == models.Chair.id).first()
+    chair = db.query(models.Chair).filter(chair_id == models.Chair.parcode).first()
 
     new_data.chair = chair
 
@@ -148,7 +150,7 @@ def get_chair_data(chair_id: int, db: Session):
     Returns:
         Dict: We return the data of the sonsors connected to the chair that have id = chair_id
     """
-    db_chair = db.query(models.Chair).filter(models.Chair.id == chair_id).first()
+    db_chair = db.query(models.Chair).filter(models.Chair.parcode == chair_id).first()
 
     if db_chair is None:
         raise HTTPException(

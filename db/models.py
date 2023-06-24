@@ -43,7 +43,7 @@ class Chair(Base):
 
     # ? relationship with sensor_data
     sensor_data = relationship("SensorData", back_populates="chair")
-    location = relationship("location", uselist=False, backref="chair")
+    location = relationship("Location", uselist=False, back_populates="chair")
 
     def __str__(self):
         return f'"id": {self.id}, "password": {self.password}'

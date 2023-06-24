@@ -159,7 +159,7 @@ def get_chair_data(chair_id: int, db: Session):
 
     sensor_data = (
         db.query(models.SensorData)
-        .filter(models.SensorData.chair_id == chair_id)
+        .filter(models.SensorData.chair_id == db_chair.id)
         .order_by(models.SensorData.id.desc())
         .first()
     )

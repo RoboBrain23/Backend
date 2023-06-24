@@ -82,3 +82,33 @@ def caregiver_info(db: Session, caregiver_id: int):
         db.query(models.CareGiver).filter(models.CareGiver.id == caregiver_id).first()
     )
     return schemas.CareGiverInfo.from_orm(caregiver)
+
+def update_caregiver(
+    db: Session,
+    authorize: AuthJWT,
+    caregiver_id: int,
+    caregiver: schemas.EditProfileCareGiver,
+):
+    # Check if the caregiver with given id exists in the database
+    db_caregiver = db.query(models.CareGiver).filter(models.CareGiver.id == caregiver_id).first()
+    if not db_caregiver:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Caregiver not found")
+
+    # Update the caregiver's attributes with the new values
+    # May be edited soon
+    db_caregiver.first_name = caregiver.first_name
+    db_caregiver.last_name = caregiver.last_name
+    db_caregiver.username = caregiver.username
+    db_caregiver.email = caregiver.email
+    db_caregiver.password = caregiver.password
+    db_caregiver.age = caregiver.age
+    
+    # If the password is provided, hash it and update it in the database
+    if caregiver.password:
+        db_caregiver.password = create_hashed_password(caregiver.password)
+
+    # Commit the changes to the database
+    db.commit()
+    db.refresh(db_caregiver)
+
+    return db_caregiver

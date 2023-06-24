@@ -65,3 +65,25 @@ class CareGiverInfo(BaseModel):
                 "age": 23,
             }
         }
+
+
+class EditProfileCareGiver(BaseModel):
+    first_name: str
+    last_name: str
+    username: str
+    email: str
+    password: str
+    age: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "first_name": "Ahmed",
+                "last_name": "Ali",
+                "username": "manga07",
+                "email": "manga@mail.com",
+                "password": "examplepassword",
+                "age": 23,
+            }
+        }

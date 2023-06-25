@@ -8,6 +8,8 @@ from sqlalchemy import (
     Date,
     Table,
     Identity,
+    Boolean,
+    Numeric,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -39,7 +41,8 @@ class Chair(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     parcode = Column(Integer, unique=True, index=True)
-    password = Column(String)
+    password = Column(String, nullable=False)
+    available = Column(Boolean)
 
     # ? relationship with sensor_data
     sensor_data = relationship("SensorData", back_populates="chair")
@@ -53,20 +56,20 @@ class Location(Base):
     __tablename__ = "location"
 
     id = Column(Integer, primary_key=True, index=True)
-    latitude = Column(String)
-    longitude = Column(String)
+    latitude = Column(Numeric(precision=9, scale=6))
+    longitude = Column(Numeric(precision=9, scale=6))
 
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
-    chair = relationship("Chair", back_populates="location")
+    chair = relationship("Chair", back_populates="location", cascade="delete")
 
 
 class SensorData(Base):
     __tablename__ = "sensor_data"
 
     id = Column(Integer, primary_key=True, index=True)
-    temperature = Column(Float)
-    pulse_rate = Column(Float)
-    oximeter = Column(Float)
+    temperature = Column(Float, nullable=False)
+    pulse_rate = Column(Float, nullable=False)
+    oximeter = Column(Float, nullable=False)
     created_date = Column(Date, default=func.current_date())
     created_time = Column(Time, server_default=func.current_time())
 
@@ -79,9 +82,9 @@ class Patient(Base):
     __tablename__ = "patient"
 
     id = Column(Integer, primary_key=True, index=True)
-    first_name = Column(String)
-    last_name = Column(String)
-    gender = Column(String)
+    first_name = Column(String(length=50))
+    last_name = Column(String(length=50))
+    gender = Column(String(length=5))
     age = Column(Integer)
 
     # ? one-to-one relationship with chair
@@ -102,10 +105,10 @@ class CareGiver(Base):
         primary_key=True,
         index=True,
     )
-    first_name = Column(String)
-    last_name = Column(String)
-    username = Column(String)
-    email = Column(String)
+    first_name = Column(String(length=50))
+    last_name = Column(String(length=50))
+    username = Column(String(length=150))
+    email = Column(String(length=150))
     password = Column(String)
     age = Column(Integer)
     patients = relationship(
@@ -128,10 +131,10 @@ class CareGiver(Base):
 class CareGiverPhone(Base):
     __tablename__ = "caregiverphone"
     id = Column(Integer, primary_key=True, index=True)
-    phone_number = Column(String)
+    phone_number = Column(String(length=25))
     caregiver_id = Column(
         Integer, ForeignKey("caregiver.id"), index=True, nullable=False
     )
     caregiver = relationship(
-        "CareGiver", back_populates="phones", remote_side=[CareGiver.id]
+        "CareGiver", back_populates="phones", remote_side=[CareGiver.id], cascade="delete"
     )

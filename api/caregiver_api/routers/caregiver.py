@@ -42,11 +42,18 @@ async def get_info(
     current_user = authorize.get_jwt_subject()
     return crud.caregiver_info(caregiver_id=current_user, db=db)
 
-@router.put("/update/{caregiver_id}", response_model=schemas.CareGiverInfo, status_code=status.HTTP_200_OK)
+
+@router.put(
+    "/update/{caregiver_id}",
+    response_model=schemas.CareGiverInfo,
+    status_code=status.HTTP_200_OK,
+)
 async def update(
     caregiver_id: int,
     caregiver: schemas.EditProfileCareGiver,
     authorize: AuthJWT = Depends(),
-    db: Session = Depends(database.get_db)
+    db: Session = Depends(database.get_db),
 ):
-    return crud.update_caregiver(db=db, authorize=authorize, caregiver_id=caregiver_id, caregiver=caregiver)
+    return crud.update_caregiver(
+        db=db, authorize=authorize, caregiver_id=caregiver_id, caregiver=caregiver
+    )

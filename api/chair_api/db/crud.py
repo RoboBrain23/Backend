@@ -34,7 +34,9 @@ def chair_signup(db: Session, chair: schemas.ChairRegistration):
         )
 
     new_chair = models.Chair(
-        parcode=chair.chair_id, password=create_hashed_password(chair.password)
+        parcode=chair.chair_id,
+        password=create_hashed_password(chair.password),
+        available=True,
     )
 
     db.add(new_chair)
@@ -93,7 +95,7 @@ def chair_login(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
         )
     if authorize is None:
-        return {"details": "Patient Added successfully"}
+        return True
 
     return generate_tokens(id=chair.chair_id, authorize=authorize)
 

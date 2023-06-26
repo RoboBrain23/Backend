@@ -84,7 +84,7 @@ class Patient(Base):
     id = Column(Integer, primary_key=True, index=True)
     first_name = Column(String(length=50))
     last_name = Column(String(length=50))
-    gender = Column(String(length=5))
+    gender = Column(String(length=15))
     age = Column(Integer)
 
     # ? one-to-one relationship with chair
@@ -136,5 +136,8 @@ class CareGiverPhone(Base):
         Integer, ForeignKey("caregiver.id"), index=True, nullable=False
     )
     caregiver = relationship(
-        "CareGiver", back_populates="phones", remote_side=[CareGiver.id], cascade="delete"
+        "CareGiver",
+        back_populates="phones",
+        remote_side=[CareGiver.id],
+        cascade="delete",
     )

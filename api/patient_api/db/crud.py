@@ -20,8 +20,16 @@ def patient_info(chair_id: int, db: Session, update: bool | None = None):
     Returns:
         Dict: we return a Dict with information of the patient that connect to the chair
     """
+
+    db_chair = db.query(models.Chair).filter(models.Chair.parcode == chair_id).first()
+
+    if db_chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No Chair with such ID."
+        )
+
     db_patient = (
-        db.query(models.Patient).filter(chair_id == models.Patient.chair_id).first()
+        db.query(models.Patient).filter(db_chair.id == models.Patient.chair_id).first()
     )
 
     if db_patient is None and update is None:
@@ -31,6 +39,8 @@ def patient_info(chair_id: int, db: Session, update: bool | None = None):
         )
     elif db_patient is None and update:
         return None
+
+    db_patient.chair_id = db_chair.parcode
 
     return db_patient
 
@@ -54,7 +64,11 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
 
     db_chair = chair_crud.chair_login(db=db, chair=login_chair_schema)
 
-    if patient_info(chair_id=patient.chair_id, db=db) is not None:
+    chair = (
+        db.query(models.Chair).filter(models.Chair.parcode == patient.chair_id).first()
+    )
+
+    if not chair.available and db_chair:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This Chair is already in use.",
@@ -68,13 +82,20 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
         chair_id=patient.chair_id,
     )
 
-    chair = db.query(models.Chair).filter(models.Chair.id == patient.chair_id).first()
-
     new_patient.chair = chair
 
     db.add(new_patient)
     db.commit()
     db.refresh(new_patient)
+
+    chair.parcode = chair.parcode
+    chair.password = chair.password
+    chair.available = False
+
+    db.commit()
+    db.refresh(chair)
+
+    new_patient.chair_id = chair.parcode
 
     return new_patient
 
@@ -97,9 +118,13 @@ def update_patient_chair(
 
     login_to_new_chair = chair_crud.chair_login(db=db, chair=new_chair)
 
-    new_chair_info = patient_info(chair_id=new_chair.chair_id, db=db, update=True)
+    new_chair_info = (
+        db.query(models.Chair)
+        .filter(models.Chair.parcode == new_chair.chair_id)
+        .first()
+    )
 
-    if new_chair_info is not None:
+    if login_to_new_chair and not new_chair_info.available:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="This chair is already connected to other patient",
@@ -107,13 +132,20 @@ def update_patient_chair(
 
     db_patient.chair_id = new_chair.chair_id
 
-    db_chair = (
-        db.query(models.Chair).filter(models.Chair.id == new_chair.chair_id).first()
-    )
-
-    db_patient.chair = db_chair
+    db_patient.chair = new_chair_info
 
     db.commit()
     db.refresh(db_patient)
 
-    return db_patient
+    new_chair_info.available = False
+
+    old_chair = (
+        db.query(models.Chair).filter(models.Chair.parcode == current_chair_id).first()
+    )
+    old_chair.available = True
+
+    db.commit()
+    db.refresh(new_chair_info)
+    db.refresh(old_chair)
+
+    return {"details": "Patient Chair update successfully."}

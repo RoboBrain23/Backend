@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Patient, Chair, Caregiver, Caregiverphone, SensorData, Location
+from .forms import ChairAdminForm
 
 # Register your models here.
 
@@ -30,6 +31,7 @@ class ChairAdmin(admin.ModelAdmin):
         LocationInline,
         SensorDataInline,
     ]
+    form = ChairAdminForm
 
 
 admin.site.register(Patient)

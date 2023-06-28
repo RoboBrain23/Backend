@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
-from fastapi.encoders import jsonable_encoder
 from auth.schema import Token
 import db.database as database, api.caregiver_api.db.schemas as schemas, api.caregiver_api.db.crud as crud
-from typing import Dict
-
+from db.database import get_db
+from db.models import Patient , CareGiver
 
 router = APIRouter(tags=["caregiver"], prefix="/caregiver")
 
@@ -57,3 +56,28 @@ async def update(
     return crud.update_caregiver(
         db=db, authorize=authorize, caregiver_id=caregiver_id, caregiver=caregiver
     )
+
+@router.put("/assign-patients")
+async def assign_patients(
+    assignment: schemas.CareGiverAssignment,
+    db: Session = Depends(get_db)
+):
+    # first we need to get the the caregiver to assign this one to one or more patients
+    caregiver = db.query(CareGiver).filter_by(id=assignment.caregiver_id).first()
+
+    # Check the validation of the caregiver
+    if not caregiver:
+        raise HTTPException(status_code=404, detail="Caregiver not found")
+
+    # get the patient by id 
+    patients = db.query(Patient).filter(Patient.id.in_(assignment.patient_ids)).all()
+
+    # make sure all the patients exist
+    if len(patients) != len(assignment.patient_ids):
+        raise HTTPException(status_code=404, detail="One or more patients not found")
+
+    # assign the patients to the caregiver
+    caregiver.patients = patients
+    db.commit()
+    
+    return {"message": "Patients assigned successfully"}

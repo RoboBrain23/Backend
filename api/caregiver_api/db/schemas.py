@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from typing import List
 
 
 # * Here we put our schemas to be used in the routes and the database models
@@ -87,3 +88,7 @@ class EditProfileCareGiver(BaseModel):
                 "age": 23,
             }
         }
+
+class CareGiverAssignment(BaseModel):
+    caregiver_id: int
+    patient_ids: List[int]

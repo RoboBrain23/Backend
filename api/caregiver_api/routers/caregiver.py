@@ -79,5 +79,20 @@ async def assign_patients(
     # assign the patients to the caregiver
     caregiver.patients = patients
     db.commit()
-    
+
     return {"message": "Patients assigned successfully"}
+
+@router.get("/assigned-patients")
+def list_assigned_patients(db: Session = Depends(get_db)):
+    patients = db.query(Patient).all()
+    assigned_patients = []
+    for patient in patients:
+        for caregiver in patient.caregivers:
+            assigned_patients.append({
+                "caregiver_id": caregiver.id,
+                "caregiver_name": caregiver.username,
+                "patient_id": patient.id,
+                "patient_name": patient.first_name
+            })
+
+    return {"assigned_patients": assigned_patients}

@@ -99,3 +99,39 @@ def list_assigned_patients(db: Session = Depends(get_db)):
             )
 
     return {"assigned_patients": assigned_patients}
+
+
+@router.post("/notification", status_code=status.HTTP_201_CREATED)
+async def post_notification(
+    notification: schemas.StoreNotification,
+    db: Session = Depends(get_db),
+    authorize: AuthJWT = Depends(),
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
+        )
+    current_user_id = authorize.get_jwt_subject()
+    return crud.create_notification(
+        db=db, notification=notification, caregiver_id=current_user_id
+    )
+
+
+@router.get(
+    "/notification",
+    status_code=status.HTTP_200_OK,
+    response_model=list[schemas.GetNotification],
+)
+async def retrieve_notification(
+    db: Session = Depends(get_db), authorize: AuthJWT = Depends()
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
+        )
+    current_user_id = authorize.get_jwt_subject()
+    return crud.get_notification(db=db, caregiver_id=current_user_id)

@@ -43,7 +43,7 @@ class Chair(Base):
     id = Column(Integer, primary_key=True, index=True)
     parcode = Column(Integer, unique=True, index=True)
     password = Column(String, nullable=False)
-    available = Column(Boolean)
+    available = Column(Boolean, default=True)
 
     # ? relationship with sensor_data
     sensor_data = relationship("SensorData", back_populates="chair")

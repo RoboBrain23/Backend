@@ -99,7 +99,6 @@ class StoreNotification(BaseModel):
     sensor: str
     value: float
     chair_id: int
-    caregiver_id: int
 
     class Config:
         orm_mode = True
@@ -108,7 +107,6 @@ class StoreNotification(BaseModel):
                 "sensor": "Body temperature",
                 "value": 37.5,
                 "chair_id": 77,
-                "caregiver_id": 1,
             }
         }
 
@@ -122,7 +120,6 @@ class GetNotification(StoreNotification):
                 "sensor": "Body temperature",
                 "value": 37.5,
                 "chair_id": 77,
-                "caregiver_id": 1,
                 "date": "2023-07-04T09:45:00",
             }
         }

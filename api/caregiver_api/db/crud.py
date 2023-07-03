@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 import api.caregiver_api.db.schemas as schemas, db.models as models
 from fastapi import HTTPException, status
 from fastapi_jwt_auth import AuthJWT
+from sqlalchemy import desc
 from fastapi.encoders import jsonable_encoder
 from passlib.context import CryptContext
 from db.crud import create_hashed_password, verify_password, generate_tokens
@@ -117,3 +118,60 @@ def update_caregiver(
     db.refresh(db_caregiver)
 
     return db_caregiver
+
+
+def get_notification(db: Session, caregiver_id: int):
+    notifications = (
+        db.query(models.Notification)
+        .filter(caregiver_id == models.Notification.caregiver_id)
+        .order_by(desc(models.Notification.date))
+        .all()
+    )
+
+    if notifications is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No notification found"
+        )
+
+    for notification in notifications:
+        chair = db.query(models.Chair).get(notification.chair_id)
+        notification.chair_id = chair.parcode
+
+    return notifications
+
+
+def create_notification(
+    db: Session, notification: schemas.StoreNotification, caregiver_id: int
+):
+    chair = (
+        db.query(models.Chair)
+        .filter(notification.chair_id == models.Chair.parcode)
+        .first()
+    )
+
+    if chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair Not Found"
+        )
+
+    caregiver = (
+        db.query(models.CareGiver).filter(caregiver_id == models.CareGiver.id).first()
+    )
+
+    if caregiver is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair Not Found"
+        )
+
+    new_notification = models.Notification(
+        sensor=notification.sensor,
+        value=notification.value,
+        chair_id=chair.id,
+        caregiver_id=caregiver.id,
+    )
+
+    db.add(new_notification)
+    db.commit()
+    db.refresh(new_notification)
+
+    return new_notification

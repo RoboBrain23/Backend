@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from typing import Optional
 from typing import List
-
+from datetime import datetime
 
 # * Here we put our schemas to be used in the routes and the database models
 # * schemas work as blueprints for the database models and the routes request and response bodies
@@ -93,3 +93,36 @@ class EditProfileCareGiver(BaseModel):
 class CareGiverAssignment(BaseModel):
     caregiver_id: int
     patient_ids: List[int]
+
+
+class StoreNotification(BaseModel):
+    sensor: str
+    value: float
+    chair_id: int
+    caregiver_id: int
+
+    class Config:
+        orm_mode = True
+        schema_extra = {
+            "example": {
+                "sensor": "Body temperature",
+                "value": 37.5,
+                "chair_id": 77,
+                "caregiver_id": 1,
+            }
+        }
+
+
+class GetNotification(StoreNotification):
+    date: datetime
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "sensor": "Body temperature",
+                "value": 37.5,
+                "chair_id": 77,
+                "caregiver_id": 1,
+                "date": "2023-07-04T09:45:00",
+            }
+        }

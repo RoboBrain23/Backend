@@ -89,6 +89,7 @@ class EditProfileCareGiver(BaseModel):
             }
         }
 
+
 class CareGiverAssignment(BaseModel):
     caregiver_id: int
     patient_ids: List[int]

@@ -10,6 +10,7 @@ from sqlalchemy import (
     Identity,
     Boolean,
     Numeric,
+    DateTime,
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -47,6 +48,7 @@ class Chair(Base):
     # ? relationship with sensor_data
     sensor_data = relationship("SensorData", back_populates="chair")
     location = relationship("Location", uselist=False, back_populates="chair")
+    notification = relationship("Notification", uselist=False, back_populates="chair")
 
     def __str__(self):
         return f'"id": {self.id}, "password": {self.password}'
@@ -123,6 +125,9 @@ class CareGiver(Base):
     #     "CareGiverPhone", back_populates="caregiver", foreign_keys=[caregiverphone_id]
     # )
     phones = relationship("CareGiverPhone", back_populates="caregiver")
+    notification = relationship(
+        "Notification", uselist=False, back_populates="caregiver"
+    )
 
     def __str__(self):
         return f"Care Giver : {self.first_name}"
@@ -140,4 +145,20 @@ class CareGiverPhone(Base):
         back_populates="phones",
         remote_side=[CareGiver.id],
         cascade="delete",
+    )
+
+
+class Notification(Base):
+    __tablename__ = "notification"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sensor = Column(String(length=150))
+    value = Column(Float, nullable=False)
+    date = Column(DateTime, default=func.current_timestamp())
+    chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
+    caregiver_id = Column(Integer, ForeignKey("caregiver.id"), index=True)
+
+    chair = relationship("Chair", back_populates="notification", cascade="delete")
+    caregiver = relationship(
+        "CareGiver", uselist=False, back_populates="notification", cascade="delete"
     )

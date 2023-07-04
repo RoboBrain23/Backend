@@ -128,7 +128,7 @@ def get_notification(db: Session, caregiver_id: int):
         .all()
     )
 
-    if notifications is None:
+    if len(notifications) == 0:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="No notification found"
         )

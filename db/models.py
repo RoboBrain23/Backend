@@ -49,6 +49,7 @@ class Chair(Base):
     sensor_data = relationship("SensorData", back_populates="chair")
     location = relationship("Location", uselist=False, back_populates="chair")
     notification = relationship("Notification", uselist=False, back_populates="chair")
+    patient = relationship("Patient", uselist=False, back_populates="chair")
 
     def __str__(self):
         return f'"id": {self.id}, "password": {self.password}'
@@ -91,7 +92,7 @@ class Patient(Base):
 
     # ? one-to-one relationship with chair
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
-    chair = relationship("Chair", uselist=False, backref="patient")
+    chair = relationship("Chair", uselist=False, back_populates="patient")
     caregivers = relationship(
         "CareGiver", secondary=association_table, back_populates="patients"
     )

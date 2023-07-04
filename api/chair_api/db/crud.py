@@ -92,7 +92,8 @@ def chair_login(
     current_chair = get_chair(db=db, chair=chair)
     if current_chair is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chair ID or Password Invalid"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Chair ID or Password Invalid",
         )
     if authorize is None:
         return True

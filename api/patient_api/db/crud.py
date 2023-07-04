@@ -45,7 +45,26 @@ def patient_info(chair_id: int, db: Session, update: bool | None = None):
     return db_patient
 
 
-def add_new_patient(db: Session, patient: PatientDataRegister):
+def associate_caregiver_patient(db: Session, caregiver_id: int, chair_id: int):
+    patient = (
+        db.query(models.Patient).filter(models.Patient.chair_id == chair_id).first()
+    )
+    caregiver = db.query(models.CareGiver).get(caregiver_id)
+
+    if caregiver is None or patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="CareGiver or Patient Not Found",
+        )
+
+    patient.caregivers.append(caregiver)
+
+    db.commit()
+
+    return
+
+
+def add_new_patient(db: Session, patient: PatientDataRegister, caregiver_id: int):
     """
     We use this function to store the patient's data in the database
     with the chair_id they use
@@ -79,7 +98,7 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
         last_name=patient.last_name,
         gender=patient.gender,
         age=int(patient.age),
-        chair_id=patient.chair_id,
+        chair_id=chair.id,
     )
 
     new_patient.chair = chair
@@ -95,9 +114,47 @@ def add_new_patient(db: Session, patient: PatientDataRegister):
     db.commit()
     db.refresh(chair)
 
-    new_patient.chair_id = chair.parcode
+    associate_caregiver_patient(db=db, caregiver_id=caregiver_id, chair_id=chair.id)
 
-    return new_patient
+    return {"detail": "Patient registered successfully"}
+
+
+def connect_patient(db: Session, chair: ChairRegistration, caregiver_id: int):
+    # validate chair credentials
+    exist_chair = chair_crud.chair_login(db=db, chair=chair)
+
+    # Get the chair and check his availability
+    chair = (
+        db.query(models.Chair).filter(models.Chair.parcode == chair.chair_id).first()
+    )
+    if chair.available or chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No Patient currently use this chair.",
+        )
+
+    # Get the patient and the caregiver
+    patient = (
+        db.query(models.Patient).filter(models.Patient.chair_id == chair.id).first()
+    )
+    caregiver = db.query(models.CareGiver).get(caregiver_id)
+
+    if patient is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Patient or CareGiver Not Found",
+        )
+    # Check if the caregiver already track this patient
+    if patient in caregiver.patients:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="This patient already tracked by you",
+        )
+
+    caregiver.patients.append(patient)
+    db.commit()
+
+    return {"detail": "Patient added to track"}
 
 
 def update_patient_chair(

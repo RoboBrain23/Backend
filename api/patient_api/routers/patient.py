@@ -1,18 +1,43 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 import db.database as database, api.patient_api.db.crud as crud
 from api.patient_api.db.schemas import PatientData, PatientDataRegister
 from api.chair_api.db.schemas import ChairRegistration
+from fastapi_jwt_auth import AuthJWT
 
 router = APIRouter(tags=["patient"], prefix="/patient")
 
 
-@router.post("/info", response_model=PatientData, status_code=status.HTTP_201_CREATED)
+@router.post("/info", status_code=status.HTTP_201_CREATED)
 def register_patient(
     patient: PatientDataRegister,
     db: Session = Depends(database.get_db),
+    authorize: AuthJWT = Depends(),
 ):
-    return crud.add_new_patient(db=db, patient=patient)
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
+        )
+    caregiver_id = authorize.get_jwt_subject()
+    return crud.add_new_patient(db=db, patient=patient, caregiver_id=caregiver_id)
+
+
+@router.post("/track", status_code=status.HTTP_200_OK)
+async def track_patient(
+    chair: ChairRegistration,
+    db: Session = Depends(database.get_db),
+    authorize: AuthJWT = Depends(),
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
+        )
+    caregiver_id = authorize.get_jwt_subject()
+    return crud.connect_patient(db=db, chair=chair, caregiver_id=caregiver_id)
 
 
 @router.get(

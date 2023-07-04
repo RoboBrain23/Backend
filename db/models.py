@@ -158,7 +158,5 @@ class Notification(Base):
     chair_id = Column(Integer, ForeignKey("chair.id"), index=True)
     caregiver_id = Column(Integer, ForeignKey("caregiver.id"), index=True)
 
-    chair = relationship("Chair", back_populates="notification", cascade="delete")
-    caregiver = relationship(
-        "CareGiver", uselist=False, back_populates="notification", cascade="delete"
-    )
+    chair = relationship("Chair", back_populates="notification")
+    caregiver = relationship("CareGiver", uselist=False, back_populates="notification")

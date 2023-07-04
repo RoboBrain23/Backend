@@ -112,11 +112,13 @@ class StoreNotification(BaseModel):
 
 
 class GetNotification(StoreNotification):
+    id: int
     date: datetime
 
     class Config:
         schema_extra = {
             "example": {
+                "id": 1,
                 "sensor": "Body temperature",
                 "value": 37.5,
                 "chair_id": 77,

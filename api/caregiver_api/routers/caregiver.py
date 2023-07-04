@@ -135,3 +135,18 @@ async def retrieve_notification(
         )
     current_user_id = authorize.get_jwt_subject()
     return crud.get_notification(db=db, caregiver_id=current_user_id)
+
+
+@router.delete(
+    "/notification/{notification_id}", status_code=status.HTTP_204_NO_CONTENT
+)
+async def remove_notification(
+    notification_id: int, db: Session = Depends(get_db), authorize: AuthJWT = Depends()
+):
+    try:
+        authorize.jwt_required()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
+        )
+    return crud.delete_notification(db=db, notification_id=notification_id)

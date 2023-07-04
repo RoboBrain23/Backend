@@ -174,4 +174,21 @@ def create_notification(
     db.commit()
     db.refresh(new_notification)
 
-    return new_notification
+    return {"details": "Notifications stored successfully"}
+
+
+def delete_notification(db: Session, notification_id: int):
+    wanted_notification = (
+        db.query(models.Notification)
+        .filter(models.Notification.id == notification_id)
+        .first()
+    )
+    if wanted_notification is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Notification not found"
+        )
+
+    db.delete(wanted_notification)
+    db.commit()
+
+    return {"details": "Notification deleted successfully"}

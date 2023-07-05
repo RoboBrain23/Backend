@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-$m09#=x-l-2p=tmsko92#2475q4(8gw^m#u*i!@qj_+9au&k-i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -76,14 +76,28 @@ WSGI_APPLICATION = "adminPanel.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "GP-Database",
-        "USER": "postgres",
-        "PASSWORD": "mypassword",
-        "HOST": "localhost",
-        "PORT": "5432",
+#This db is local db
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "GP-Database",
+#         "USER": "postgres",
+#         "PASSWORD": "mypassword",
+#         "HOST": "localhost",
+#         "PORT": "5432",
+#     }
+# }
+
+# RDS DB
+DATABASES  = {
+    'default' : 
+    {
+        'ENGINE' : 'django.db.backends.postgresql',
+        'NAME' : 'graduation_project' ,
+        'USER' : 'robobrain' , 
+        'PASSWORD' : 'graduation',
+        'HOST' : 'gp.cdotyt702xan.eu-north-1.rds.amazonaws.com',
+        'PORT' : '5432',
     }
 }
 

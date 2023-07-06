@@ -55,6 +55,7 @@ class ReadChairData(GetChairData):
 class GetChairLocation(BaseModel):
     latitude: float
     longitude: float
+    chair_id: int
 
     class Config:
         orm_mode = True
@@ -62,5 +63,6 @@ class GetChairLocation(BaseModel):
             "example": {
                 "latitude": 12.123456,
                 "longitude": 47.154789,
+                "chair_id": 55,
             }
         }

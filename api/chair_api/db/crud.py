@@ -174,3 +174,24 @@ def get_chair_data(chair_id: int, db: Session):
         )
 
     return schemas.GetChairData.from_orm(sensor_data)
+
+
+def post_chair_location(db: Session, location: schemas.GetChairLocation):
+    chair = (
+        db.query(models.Chair).filter(location.chair_id == models.Chair.parcode).first()
+    )
+
+    if chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair not found"
+        )
+
+    location.chair_id = chair.id
+
+    store_location = models.Location(**location.dict())
+
+    db.add(store_location)
+    db.commit()
+    db.refresh(store_location)
+
+    return {"detail": "Location Stored"}

@@ -55,3 +55,10 @@ def get_chair_data(
     db: Session = Depends(database.get_db),
 ):
     return crud.get_chair_data(chair_id=chair_id, db=db)
+
+
+@router.post("/location", status_code=status.HTTP_201_CREATED)
+async def recieve_location(
+    location: schemas.GetChairLocation, db: Session = Depends(database.get_db)
+):
+    return crud.post_chair_location(db=db, location=location)

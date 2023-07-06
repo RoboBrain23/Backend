@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from fastapi_jwt_auth import AuthJWT
 from auth.schema import Token
 import db.database as database, api.caregiver_api.db.schemas as schemas, api.caregiver_api.db.crud as crud
+from api.chair_api.db.schemas import GetChairLocation
 from db.database import get_db
 from db.models import Patient, CareGiver
 
@@ -150,3 +151,12 @@ async def remove_notification(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Token"
         )
     return crud.delete_notification(db=db, notification_id=notification_id)
+
+
+@router.get(
+    "/location/{chair_id}",
+    response_model=GetChairLocation,
+    status_code=status.HTTP_200_OK,
+)
+async def get_location(chair_id: int, db: Session = Depends(get_db)):
+    return crud.get_chair_location(db=db, chair_id=chair_id)

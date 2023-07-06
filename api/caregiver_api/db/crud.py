@@ -192,3 +192,23 @@ def delete_notification(db: Session, notification_id: int):
     db.commit()
 
     return {"details": "Notification deleted successfully"}
+
+
+def get_chair_location(db: Session, chair_id: int):
+    chair = db.query(models.Chair).filter(models.Chair.parcode == chair_id).first()
+
+    if chair is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chair not found"
+        )
+
+    current_location = (
+        db.query(models.Location).filter(models.Location.chair_id == chair.id).first()
+    )
+
+    if current_location is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="No Location found"
+        )
+
+    return current_location

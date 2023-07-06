@@ -59,6 +59,6 @@ def get_chair_data(
 
 @router.post("/location", status_code=status.HTTP_201_CREATED)
 async def recieve_location(
-    location: schemas.GetChairLocation, db: Session = Depends(database.get_db)
+    location: schemas.StoreChairLocation, db: Session = Depends(database.get_db)
 ):
     return crud.post_chair_location(db=db, location=location)

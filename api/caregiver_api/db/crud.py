@@ -3,8 +3,6 @@ import api.caregiver_api.db.schemas as schemas, db.models as models
 from fastapi import HTTPException, status
 from fastapi_jwt_auth import AuthJWT
 from sqlalchemy import desc
-from fastapi.encoders import jsonable_encoder
-from passlib.context import CryptContext
 from db.crud import create_hashed_password, verify_password, generate_tokens
 
 
@@ -37,13 +35,6 @@ def signup_caregiver(
             detail="This username is already exist",
         )
 
-    # db_id = (
-    #     db.query(models.CareGiver).filter(models.CareGiver.id == caregiver.id).first()
-    # )
-
-    # * Create a new instance of CareGiver model to store the caregiver in the database
-
-    # caregiver.id = int(caregiver.id)
     caregiver.age = int(caregiver.age)
     caregiver.password = create_hashed_password(caregiver.password)
 

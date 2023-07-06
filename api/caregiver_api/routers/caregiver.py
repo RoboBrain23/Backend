@@ -93,14 +93,17 @@ def list_assigned_patients(db: Session = Depends(get_db)):
             assigned_patients.append(
                 {
                     "caregiver_id": caregiver.id,
-                    "caregiver_name": caregiver.username,
-                    "patient_id": patient.id,
                     "patient_name": patient.first_name,
+                    "patient_id": patient.id,
+                    "chair_parcode_id": patient.chair.parcode,
+                    
                 }
             )
 
     return {"assigned_patients": assigned_patients}
 
+
+############################ NOTIFICATION PART  ##################################
 
 @router.post("/notification", status_code=status.HTTP_201_CREATED)
 async def post_notification(

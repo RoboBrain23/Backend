@@ -203,7 +203,10 @@ def get_chair_location(db: Session, chair_id: int):
         )
 
     current_location = (
-        db.query(models.Location).filter(models.Location.chair_id == chair.id).first()
+        db.query(models.Location)
+        .filter(models.Location.chair_id == chair.id)
+        .order_by(desc(models.Location.id))
+        .first()
     )
 
     if current_location is None:

@@ -95,7 +95,7 @@ class SensorData(models.Model):
     temperature = models.FloatField()
     pulse_rate = models.FloatField()
     oximeter = models.FloatField()
-    created_date = models.DateField(blank=True, null=True)
+    created_date = models.DateTimeField(blank=True, null=True)
     created_time = models.TimeField(blank=True, null=True)
     chair = models.ForeignKey(Chair, models.DO_NOTHING, blank=True, null=True)
 
